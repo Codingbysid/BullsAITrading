@@ -49,9 +49,9 @@ def test_qf_lib_import():
         
         # Test core components
         from qf_lib.settings import Settings
-        from qf_lib.containers.data_container import DataContainer
-        from qf_lib.containers.series.qf_series import QFSeries
-        from qf_lib.containers.dataframe.qf_dataframe import QFDataFrame
+        from qf_lib.containers import QFSeries, QFDataFrame
+        from qf_lib.data_providers import DataProvider
+        from qf_lib.backtesting import Portfolio, Broker
         
         logger.info("✅ QF-Lib core components imported successfully")
         

@@ -20,33 +20,46 @@ logger = logging.getLogger(__name__)
 
 # QF-Lib imports (with fallback for when not installed)
 try:
-    from qf_lib.backtesting.backtest_runner import BacktestRunner
-    from qf_lib.backtesting.contract.contract import Contract
-    from qf_lib.backtesting.data_handler.daily_data_handler import DailyDataHandler
-    from qf_lib.backtesting.events.time_event.regular_market_open_event import RegularMarketOpenEvent
-    from qf_lib.backtesting.execution_handler.commission_models.per_share_commission_model import PerShareCommissionModel
-    from qf_lib.backtesting.execution_handler.slippage_models.simple_slippage_model import SimpleSlippageModel
-    from qf_lib.backtesting.order.market_order import MarketOrder
-    from qf_lib.backtesting.order.order import Order
-    from qf_lib.backtesting.portfolio.portfolio import Portfolio
-    from qf_lib.backtesting.position_sizer.initial_risk_position_sizer import InitialRiskPositionSizer
-    from qf_lib.backtesting.strategy.abstract_strategy import AbstractStrategy
-    from qf_lib.common.enums.frequency import Frequency
-    from qf_lib.common.utils.dateutils.timer import Timer
-    from qf_lib.containers.qf_data_array import QFDataArray
-    from qf_lib.data_providers.preset_data_provider import PresetDataProvider
+    # Core QF-Lib imports
     from qf_lib.settings import Settings as QFLibSettings
-    from qf_lib.backtesting.broker.backtest_broker import BacktestBroker
-    from qf_lib.backtesting.contract.factories.contract_factory import ContractFactory
-    from qf_lib.backtesting.execution_handler.simulated_execution_handler import SimulatedExecutionHandler
-    from qf_lib.backtesting.trading_session.backtest_trading_session import BacktestTradingSession
-    from qf_lib.common.utils.logging.qf_logging import setup_logging as setup_qf_logging
+    from qf_lib.containers import QFSeries, QFDataFrame
+    from qf_lib.data_providers import DataProvider
+    from qf_lib.backtesting import Portfolio, Broker
+    
+    # Try to import more specific components
+    try:
+        from qf_lib.backtesting.backtest_runner import BacktestRunner
+        from qf_lib.backtesting.contract.contract import Contract
+        from qf_lib.backtesting.data_handler.daily_data_handler import DailyDataHandler
+        from qf_lib.backtesting.events.time_event.regular_market_open_event import RegularMarketOpenEvent
+        from qf_lib.backtesting.execution_handler.commission_models.per_share_commission_model import PerShareCommissionModel
+        from qf_lib.backtesting.execution_handler.slippage_models.simple_slippage_model import SimpleSlippageModel
+        from qf_lib.backtesting.order.market_order import MarketOrder
+        from qf_lib.backtesting.order.order import Order
+        from qf_lib.backtesting.position_sizer.initial_risk_position_sizer import InitialRiskPositionSizer
+        from qf_lib.backtesting.strategy.abstract_strategy import AbstractStrategy
+        from qf_lib.common.enums.frequency import Frequency
+        from qf_lib.common.utils.dateutils.timer import Timer
+        from qf_lib.containers.qf_data_array import QFDataArray
+        from qf_lib.data_providers.preset_data_provider import PresetDataProvider
+        from qf_lib.backtesting.broker.backtest_broker import BacktestBroker
+        from qf_lib.backtesting.contract.factories.contract_factory import ContractFactory
+        from qf_lib.backtesting.execution_handler.simulated_execution_handler import SimulatedExecutionHandler
+        from qf_lib.backtesting.trading_session.backtest_trading_session import BacktestTradingSession
+        from qf_lib.common.utils.logging.qf_logging import setup_logging as setup_qf_logging
+        
+        QF_LIB_FULL_AVAILABLE = True
+        logger.info("✅ QF-Lib full components imported successfully")
+    except ImportError as e:
+        QF_LIB_FULL_AVAILABLE = False
+        logger.warning(f"⚠️  Some QF-Lib components not available: {e}")
     
     QF_LIB_AVAILABLE = True
-    logger.info("✅ QF-Lib successfully imported")
+    logger.info("✅ QF-Lib core components imported successfully")
     
 except ImportError as e:
     QF_LIB_AVAILABLE = False
+    QF_LIB_FULL_AVAILABLE = False
     logger.warning(f"⚠️  QF-Lib not available: {e}")
     logger.info("💡 Install QF-Lib with: pip install qf-lib")
     
