@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantai-trading-platform"
+version = "1.0.0"
+description = "Advanced AI-driven quantitative trading platform"
+authors = [
+    {name = "QuantAI Team", email = "team@quantai.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+dependencies = [
+    "pandas>=1.5.0",
+    "numpy>=1.21.0",
+    "scikit-learn>=1.1.0",
+    "scipy>=1.9.0",
+    "xgboost>=1.7.0",
+    "tensorflow>=2.13.0",
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "yfinance>=0.2.18",
+    "ta>=0.10.2",
+    "finvizfinance>=0.14.0",
+    "nltk>=3.8.1",
+    "spacy>=3.6.0",
+    "textblob>=0.17.1",
+    "newsapi-python>=0.2.7",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "aiohttp>=3.8.0",
+    "requests>=2.28.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=0.19.0",
+    "psycopg2-binary>=2.9.0",
+    "redis>=4.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+    "bandit>=1.7.0",
+    "safety>=2.3.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--verbose",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101", "B601"]

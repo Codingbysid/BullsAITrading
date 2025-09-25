@@ -1,0 +1,87 @@
+# Focused QuantAI Trading Platform - Requirements
+# Advanced dependencies for 5-ticker focused trading
+
+# Core Dependencies
+pandas>=1.5.0
+numpy>=1.21.0
+scikit-learn>=1.1.0
+
+# Machine Learning
+xgboost>=1.6.0
+tensorflow>=2.10.0
+torch>=1.12.0
+transformers>=4.20.0
+
+# Financial Data
+yfinance>=0.1.70
+ta>=0.10.0
+finvizfinance>=0.14.0
+
+# NLP & Sentiment
+nltk>=3.7
+spacy>=3.4.0
+textblob>=0.17.0
+newsapi-python>=0.2.6
+
+# API & Web
+fastapi>=0.85.0
+uvicorn>=0.18.0
+aiohttp>=3.8.0
+requests>=2.28.0
+
+# Configuration & Validation
+pydantic>=1.10.0
+pydantic-settings>=2.0.0
+python-dotenv>=0.19.0
+
+# Advanced Quantitative Libraries
+QuantLib-Python>=1.29
+PyPortfolioOpt>=1.5.0
+Riskfolio-Lib>=4.0.0
+empyrical-reloaded>=0.5.0
+statsmodels>=0.13.0
+arch>=5.0.0
+mlfinlab>=0.10.0
+
+# Optimization
+cvxpy>=1.2.0
+scipy>=1.9.0
+
+# Development & Testing
+pytest>=7.0.0
+pytest-asyncio>=0.19.0
+pytest-cov>=3.0.0
+black>=22.0.0
+isort>=5.10.0
+flake8>=5.0.0
+mypy>=0.971
+pre-commit>=2.20.0
+bandit>=1.7.0
+safety>=2.3.0
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+plotly>=5.10.0
+
+# Database
+psycopg2-binary>=2.9.0
+sqlalchemy>=1.4.0
+redis>=4.3.0
+
+# MLOps
+mlflow>=1.28.0
+
+# Time Series
+tslearn>=0.5.0
+
+# Async
+asyncio-mqtt>=0.11.0
+websockets>=10.0
+
+# Logging
+structlog>=22.1.0
+
+# Utilities
+tqdm>=4.64.0
+joblib>=1.1.0
