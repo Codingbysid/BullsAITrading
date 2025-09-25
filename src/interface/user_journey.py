@@ -8,9 +8,15 @@ to portfolio management with AI recommendations and learning.
 from typing import Dict, List, Optional
 import logging
 from datetime import datetime, timedelta
-from ..database.db_manager import QuantAIDatabase
-from ..portfolio.portfolio_manager import PortfolioManager
-from ..training.feedback_trainer import ReinforcementFeedbackTrainer
+try:
+    from ..database.db_manager import QuantAIDatabase
+    from ..portfolio.portfolio_manager import PortfolioManager
+    from ..training.feedback_trainer import ReinforcementFeedbackTrainer
+except ImportError:
+    # Fallback for direct execution
+    from database.db_manager import QuantAIDatabase
+    from portfolio.portfolio_manager import PortfolioManager
+    from training.feedback_trainer import ReinforcementFeedbackTrainer
 
 class UserJourneyManager:
     """Manages the complete user journey flow"""

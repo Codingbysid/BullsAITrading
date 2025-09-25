@@ -14,13 +14,52 @@ from pathlib import Path
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent.parent / 'src'))
 
-from database.db_manager import QuantAIDatabase
-from portfolio.portfolio_manager import PortfolioManager
-from interface.cli import QuantAITerminalInterface
-from interface.user_journey import UserJourneyManager
-from security.auth import SecurityManager
-from training.feedback_trainer import ReinforcementFeedbackTrainer
-from config.settings import settings
+try:
+    from database.db_manager import QuantAIDatabase
+    from portfolio.portfolio_manager import PortfolioManager
+    from interface.cli import QuantAITerminalInterface
+    from interface.user_journey import UserJourneyManager
+    from security.auth import SecurityManager
+    from training.feedback_trainer import ReinforcementFeedbackTrainer
+    from config.settings import settings
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    print("🔄 Using fallback implementations...")
+    
+    # Fallback implementations
+    class QuantAIDatabase:
+        def __init__(self, config): pass
+        def create_tables(self): pass
+    
+    class PortfolioManager:
+        def __init__(self, db): pass
+    
+    class QuantAITerminalInterface:
+        def __init__(self): pass
+        def start(self): 
+            print("🎮 Demo Mode - Fallback Interface")
+            print("This is a demonstration of the QuantAI Trading Platform capabilities.")
+    
+    class UserJourneyManager:
+        def __init__(self, db, portfolio_manager): pass
+    
+    class SecurityManager:
+        def __init__(self, db, settings): pass
+    
+    class ReinforcementFeedbackTrainer:
+        def __init__(self, db): pass
+    
+    class Settings:
+        def __init__(self):
+            self.database = type('obj', (object,), {'host': 'localhost', 'database': 'quantai', 'user': 'root', 'password': ''})()
+            self.api = type('obj', (object,), {'host': '0.0.0.0', 'port': 8000, 'debug': True})()
+            self.trading = type('obj', (object,), {'supported_symbols': ['AMZN', 'META', 'NVDA', 'GOOGL', 'AAPL']})()
+            self.learning = type('obj', (object,), {'feedback_evaluation_days': 30})()
+            self.risk = type('obj', (object,), {'var_confidence_levels': [0.95, 0.99]})()
+            self.logging = type('obj', (object,), {'level': 'INFO'})()
+            self.security = type('obj', (object,), {'password_min_length': 8})()
+    
+    settings = Settings()
 
 class EnhancedPortfolioManager:
     """Enhanced Portfolio Manager with complete user journey"""

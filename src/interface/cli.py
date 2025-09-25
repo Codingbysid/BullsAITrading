@@ -16,8 +16,15 @@ try:
     from ..data.data_sources import DataManager
     MODULES_AVAILABLE = True
 except ImportError:
-    MODULES_AVAILABLE = False
-    logging.warning("Some modules not available, using fallback implementations")
+    try:
+        # Fallback for direct execution
+        from database.db_manager import QuantAIDatabase
+        from portfolio.portfolio_manager import PortfolioManager
+        from data.data_sources import DataManager
+        MODULES_AVAILABLE = True
+    except ImportError:
+        MODULES_AVAILABLE = False
+        logging.warning("Some modules not available, using fallback implementations")
 
 class QuantAITerminalInterface:
     """Terminal-based interface for QuantAI Portfolio Manager"""
