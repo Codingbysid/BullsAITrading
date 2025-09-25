@@ -17,6 +17,9 @@ QuantAI Trading Platform is a comprehensive, institutional-grade quantitative tr
 - **💼 Portfolio Management**: Interactive portfolio tracking with AI recommendations
 - **🔄 Reinforcement Learning**: Continuous improvement through user feedback
 - **🌐 Web Interface**: FastAPI backend with Streamlit dashboard
+- **🧪 Automated Testing**: Comprehensive test suite with quality gates
+- **🔒 Security**: Automated security scanning and vulnerability checks
+- **📚 Documentation**: Complete API documentation and coding standards
 
 ## 🎯 **Focused 5-Ticker Strategy**
 
@@ -64,6 +67,16 @@ python run_quantai.py demo
 # Run backtesting
 python run_quantai.py backtest
 
+# Run advanced backtester
+python run_quantai.py advanced
+
+# Development commands
+make test          # Run all tests
+make lint          # Run linting
+make format        # Format code
+make security      # Run security checks
+make quality-gate  # Run all quality checks
+
 # CLI interface
 python run_quantai.py cli
 
@@ -99,7 +112,8 @@ QuantAI-Trading-Platform/
 ├── 📁 config/                       # Configuration files
 ├── 📁 docs/                         # Documentation
 │   ├── ABOUT.md                     # Detailed technical documentation
-│   └── ARCHITECTURE.md              # System architecture
+│   ├── ARCHITECTURE.md              # System architecture
+│   └── CODING_STANDARDS.md          # Coding standards and best practices
 ├── 📁 scripts/                      # Utility scripts
 ├── 📁 examples/                     # Example usage
 ├── 📄 requirements.txt              # Dependencies
