@@ -1,6 +1,6 @@
 # 🚀 QuantAI Trading Platform
 
-**Advanced AI-driven quantitative trading platform** with comprehensive risk management, real-time monitoring, institutional-grade backtesting capabilities, and interactive portfolio management. **Now featuring a focused 5-ticker strategy for AMZN, META, NVDA, GOOGL, and AAPL with QF-Lib environment support.**
+**Advanced AI-driven quantitative trading platform** with comprehensive risk management, real-time monitoring, institutional-grade backtesting capabilities, and interactive portfolio management. **Now featuring a focused 5-ticker strategy for AMZN, META, NVDA, GOOGL, and AAPL with enhanced portfolio management and reinforcement learning.**
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -41,22 +41,6 @@ pip install -r requirements.txt
 
 # Run the platform
 python run_quantai.py demo
-```
-
-### **QF-Lib Environment Setup**
-
-For advanced backtesting with QF-Lib:
-
-```bash
-# Create QF-Lib environment
-conda create -n qf_env python=3.8
-conda activate qf_env
-
-# Install QF-Lib
-pip install qf-lib
-
-# Run QF-Lib backtester
-python scripts/run_qf_backtest.py
 ```
 
 ### **Quick Commands**
@@ -121,7 +105,7 @@ QuantAI-Trading-Platform/
 - **Ensemble Methods**: Meta-learning and model combination
 - **Attention LSTM**: Advanced sequence modeling
 
-### **📊 PRD Data Sources & APIs**
+### **📊 Data Sources**
 - **Primary APIs**: Finazon, FinViz, Alpha Vantage, Twelve Data
 - **Sentiment Sources**: News API, Gemini API, social media
 - **Historical Data**: Kaggle datasets for ML training
@@ -151,7 +135,6 @@ QuantAI-Trading-Platform/
 - Event-driven architecture
 - Professional-grade backtesting
 - **Performance**: 50 trades, +5.99% return, 60% win rate
-- **Requires**: `conda activate qf_env`
 
 #### **4. Advanced Quantitative Backtester** 📊
 - Institutional-grade models
@@ -220,12 +203,8 @@ QuantAI-Trading-Platform/
 # Simple backtester (fastest)
 python apps/backtesting/backtesters/simple_backtest.py
 
-# QF-Lib backtester (best performance) - Requires qf_env environment
-conda activate qf_env
+# QF-Lib backtester (best performance)
 python apps/backtesting/backtesters/qf_lib_backtester.py
-
-# Or use the QF-Lib runner script
-python scripts/run_qf_backtest.py
 
 # Focused 5-ticker backtester
 python apps/backtesting/backtesters/focused_5_ticker_backtester.py
@@ -234,7 +213,7 @@ python apps/backtesting/backtesters/focused_5_ticker_backtester.py
 ### **PRD Data Integration**
 ```bash
 # Test PRD data integration
-python src/data/real_market_data_integration.py
+python test_prd_data.py
 
 # Setup PRD data sources
 python scripts/setup_market_data.py
