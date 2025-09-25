@@ -1,372 +1,256 @@
 """
-Pytest configuration and fixtures for the QuantAI Trading Platform.
+Pytest configuration and fixtures for QuantAI Trading Platform.
 
-This module provides shared fixtures and configuration for all test modules.
+This module provides common fixtures and configuration for all tests.
 """
 
 import pytest
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from typing import Dict, List
-import asyncio
-import sys
+from typing import Dict, List, Any
+import tempfile
 import os
+from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-from src.config.settings import Settings
-from src.data.data_sources import DataManager, FinazonDataSource, AlphaVantageDataSource, YFinanceDataSource
-from src.data.sentiment_analysis import SentimentAggregator, NewsSentimentAnalyzer
-from src.risk.risk_management import RiskManager, KellyCriterion
-from src.models.trading_models import RandomForestModel, XGBoostModel, LSTMModel, EnsembleModel
-from src.backtesting.backtesting_engine import BacktestingEngine
-
+# Test data fixtures
+@pytest.fixture
+def sample_price_data():
+    """Generate sample price data for testing."""
+    dates = pd.date_range(start='2020-01-01', end='2024-12-31', freq='D')
+    np.random.seed(42)  # For reproducible tests
+    
+    data = {
+        'date': dates,
+        'open': 100 + np.cumsum(np.random.randn(len(dates)) * 0.01),
+        'high': 100 + np.cumsum(np.random.randn(len(dates)) * 0.01) + np.random.rand(len(dates)) * 2,
+        'low': 100 + np.cumsum(np.random.randn(len(dates)) * 0.01) - np.random.rand(len(dates)) * 2,
+        'close': 100 + np.cumsum(np.random.randn(len(dates)) * 0.01),
+        'volume': np.random.randint(1000000, 10000000, len(dates))
+    }
+    
+    df = pd.DataFrame(data)
+    df.set_index('date', inplace=True)
+    return df
 
 @pytest.fixture
-def test_settings():
-    """Test settings with mock API keys."""
-    return Settings(
-        alpha_vantage_api_key="test_alpha_vantage_key",
-        finazon_api_key="test_finazon_key",
-        news_api_key="test_news_api_key",
-        gemini_api_key="test_gemini_key",
-        max_position_size=0.2,
-        max_drawdown=0.1,
-        target_sharpe_ratio=1.5
-    )
+def sample_portfolio_data():
+    """Generate sample portfolio data for testing."""
+    dates = pd.date_range(start='2020-01-01', end='2024-12-31', freq='D')
+    np.random.seed(42)
+    
+    returns = np.random.normal(0.0005, 0.02, len(dates))
+    portfolio_values = 100000 * np.exp(np.cumsum(returns))
+    
+    data = {
+        'date': dates,
+        'portfolio_value': portfolio_values,
+        'cash': 10000 + np.random.randn(len(dates)) * 1000,
+        'positions': np.random.randint(0, 5, len(dates))
+    }
+    
+    df = pd.DataFrame(data)
+    df.set_index('date', inplace=True)
+    return df
 
+@pytest.fixture
+def sample_trading_signals():
+    """Generate sample trading signals for testing."""
+    dates = pd.date_range(start='2020-01-01', end='2024-12-31', freq='D')
+    np.random.seed(42)
+    
+    signals = np.random.choice([-1, 0, 1], len(dates), p=[0.2, 0.6, 0.2])
+    signal_strength = np.random.rand(len(dates))
+    confidence = np.random.rand(len(dates))
+    
+    data = {
+        'date': dates,
+        'signal': signals,
+        'signal_strength': signal_strength,
+        'confidence': confidence,
+        'rsi': np.random.uniform(20, 80, len(dates)),
+        'bb_position': np.random.uniform(0, 1, len(dates)),
+        'momentum': np.random.uniform(-0.1, 0.1, len(dates))
+    }
+    
+    df = pd.DataFrame(data)
+    df.set_index('date', inplace=True)
+    return df
 
 @pytest.fixture
 def sample_market_data():
-    """Sample market data for testing."""
-    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
+    """Generate sample market data for multiple symbols."""
+    symbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']
+    dates = pd.date_range(start='2020-01-01', end='2024-12-31', freq='D')
     np.random.seed(42)
     
-    # Generate realistic price data
-    prices = 100 + np.cumsum(np.random.randn(len(dates)) * 0.02)
-    volumes = np.random.randint(1000000, 10000000, len(dates))
+    market_data = {}
+    for symbol in symbols:
+        returns = np.random.normal(0.0005, 0.02, len(dates))
+        prices = 100 * np.exp(np.cumsum(returns))
+        
+        data = {
+            'date': dates,
+            'open': prices + np.random.randn(len(dates)) * 0.5,
+            'high': prices + np.random.rand(len(dates)) * 2,
+            'low': prices - np.random.rand(len(dates)) * 2,
+            'close': prices,
+            'volume': np.random.randint(1000000, 10000000, len(dates))
+        }
+        
+        df = pd.DataFrame(data)
+        df.set_index('date', inplace=True)
+        market_data[symbol] = df
     
-    data = pd.DataFrame({
-        'symbol': 'AAPL',
-        'open': prices * (1 + np.random.randn(len(dates)) * 0.01),
-        'high': prices * (1 + np.abs(np.random.randn(len(dates))) * 0.02),
-        'low': prices * (1 - np.abs(np.random.randn(len(dates))) * 0.02),
-        'close': prices,
-        'volume': volumes,
-        'source': 'test'
-    }, index=dates)
+    return market_data
+
+@pytest.fixture
+def temp_db_path():
+    """Create a temporary database file for testing."""
+    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as tmp:
+        db_path = tmp.name
     
-    return data
-
-
-@pytest.fixture
-def sample_features():
-    """Sample feature data for testing."""
-    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
-    np.random.seed(42)
+    yield db_path
     
-    features = pd.DataFrame({
-        'rsi': np.random.uniform(20, 80, len(dates)),
-        'sma_20': np.random.uniform(90, 110, len(dates)),
-        'sma_50': np.random.uniform(95, 105, len(dates)),
-        'bb_upper': np.random.uniform(105, 115, len(dates)),
-        'bb_lower': np.random.uniform(85, 95, len(dates)),
-        'macd': np.random.uniform(-2, 2, len(dates)),
-        'macd_signal': np.random.uniform(-1, 1, len(dates)),
-        'volume_ratio': np.random.uniform(0.5, 2.0, len(dates)),
-        'sentiment_score': np.random.uniform(-1, 1, len(dates)),
-        'pe_ratio': np.random.uniform(10, 30, len(dates)),
-        'pb_ratio': np.random.uniform(1, 5, len(dates))
-    }, index=dates)
-    
-    return features
-
+    # Cleanup
+    if os.path.exists(db_path):
+        os.unlink(db_path)
 
 @pytest.fixture
-def sample_returns():
-    """Sample returns data for testing."""
-    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
-    np.random.seed(42)
-    
-    returns = pd.Series(
-        np.random.randn(len(dates)) * 0.02,
-        index=dates,
-        name='returns'
-    )
-    
-    return returns
-
-
-@pytest.fixture
-def sample_sentiment_data():
-    """Sample sentiment data for testing."""
-    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
-    np.random.seed(42)
-    
-    sentiment_data = []
-    for i, date in enumerate(dates):
-        sentiment_data.append({
-            'symbol': 'AAPL',
-            'timestamp': date,
-            'sentiment_score': np.random.uniform(-1, 1),
-            'confidence': np.random.uniform(0.5, 1.0),
-            'source': 'news_api',
-            'text': f'Test news article {i}'
-        })
-    
-    return sentiment_data
-
-
-@pytest.fixture
-def data_manager():
-    """Data manager instance for testing."""
-    return DataManager()
-
-
-@pytest.fixture
-def sentiment_aggregator():
-    """Sentiment aggregator instance for testing."""
-    return SentimentAggregator()
-
-
-@pytest.fixture
-def risk_manager():
-    """Risk manager instance for testing."""
-    return RiskManager()
-
-
-@pytest.fixture
-def kelly_criterion():
-    """Kelly criterion instance for testing."""
-    return KellyCriterion()
-
-
-@pytest.fixture
-def backtesting_engine():
-    """Backtesting engine instance for testing."""
-    return BacktestingEngine()
-
-
-@pytest.fixture
-def trading_models():
-    """Trading models for testing."""
+def sample_config():
+    """Sample configuration for testing."""
     return {
-        'random_forest': RandomForestModel(),
-        'xgboost': XGBoostModel(),
-        'lstm': LSTMModel(),
-        'ensemble': EnsembleModel()
+        'trading': {
+            'initial_capital': 100000,
+            'commission': 0.001,
+            'slippage': 0.0005,
+            'max_position_size': 0.1
+        },
+        'risk': {
+            'max_portfolio_drawdown': 0.15,
+            'max_ticker_drawdown': 0.20,
+            'var_confidence': 0.05,
+            'kelly_max_fraction': 0.25
+        },
+        'data': {
+            'start_date': '2020-01-01',
+            'end_date': '2024-12-31',
+            'symbols': ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']
+        }
     }
 
-
 @pytest.fixture
-def event_loop():
-    """Event loop for async testing."""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(autouse=True)
-def setup_test_environment():
-    """Setup test environment before each test."""
-    # Set test environment variables
-    os.environ['TESTING'] = 'true'
-    os.environ['LOG_LEVEL'] = 'WARNING'
-    
-    yield
-    
-    # Cleanup after test
-    if 'TESTING' in os.environ:
-        del os.environ['TESTING']
-
-
-class MockAPIClient:
-    """Mock API client for testing."""
-    
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.call_count = 0
-    
-    async def get_historical_data(self, symbol: str, start_date, end_date):
-        """Mock historical data response."""
-        self.call_count += 1
-        dates = pd.date_range(start=start_date, end=end_date, freq='D')
-        np.random.seed(42)
-        
-        data = pd.DataFrame({
-            'symbol': symbol,
-            'open': np.random.uniform(90, 110, len(dates)),
-            'high': np.random.uniform(100, 120, len(dates)),
-            'low': np.random.uniform(80, 100, len(dates)),
-            'close': np.random.uniform(90, 110, len(dates)),
-            'volume': np.random.randint(1000000, 10000000, len(dates)),
-            'source': 'mock'
-        }, index=dates)
-        
-        return data
-
-
-@pytest.fixture
-def mock_finazon_client():
-    """Mock Finazon API client."""
-    return MockAPIClient("test_finazon_key")
-
-
-@pytest.fixture
-def mock_alpha_vantage_client():
-    """Mock Alpha Vantage API client."""
-    return MockAPIClient("test_alpha_vantage_key")
-
-
-@pytest.fixture
-def mock_news_client():
-    """Mock News API client."""
-    class MockNewsClient:
-        def __init__(self, api_key: str):
-            self.api_key = api_key
-            self.call_count = 0
-        
-        def get_everything(self, **kwargs):
-            """Mock news response."""
-            self.call_count += 1
-            return {
-                'status': 'ok',
-                'articles': [
-                    {
-                        'title': f'Test news article {i}',
-                        'description': f'Test description {i}',
-                        'publishedAt': (datetime.now() - timedelta(days=i)).isoformat(),
-                        'source': {'name': f'Test Source {i}'}
+def mock_api_responses():
+    """Mock API responses for testing."""
+    return {
+        'alpha_vantage': {
+            'AAPL': {
+                'Meta Data': {
+                    '1. Information': 'Daily Prices (open, high, low, close) and Volumes',
+                    '2. Symbol': 'AAPL',
+                    '3. Last Refreshed': '2024-12-31',
+                    '4. Output Size': 'Full size',
+                    '5. Time Zone': 'US/Eastern'
+                },
+                'Time Series (Daily)': {
+                    '2024-12-31': {
+                        '1. open': '150.00',
+                        '2. high': '155.00',
+                        '3. low': '148.00',
+                        '4. close': '152.00',
+                        '5. volume': '50000000'
                     }
-                    for i in range(10)
-                ]
+                }
             }
-    
-    return MockNewsClient("test_news_key")
+        },
+        'news_api': {
+            'articles': [
+                {
+                    'title': 'Apple stock rises on strong earnings',
+                    'description': 'Apple reported better than expected earnings...',
+                    'url': 'https://example.com/apple-earnings',
+                    'publishedAt': '2024-12-31T10:00:00Z',
+                    'source': {'name': 'Financial News'}
+                }
+            ]
+        }
+    }
 
+# Test markers
+def pytest_configure(config):
+    """Configure pytest markers."""
+    config.addinivalue_line("markers", "unit: Unit tests")
+    config.addinivalue_line("markers", "integration: Integration tests")
+    config.addinivalue_line("markers", "performance: Performance tests")
+    config.addinivalue_line("markers", "slow: Slow running tests")
 
-# Test data generators
-def generate_test_portfolio_data(n_days: int = 252, n_assets: int = 5) -> pd.DataFrame:
-    """Generate test portfolio data."""
-    dates = pd.date_range(start='2024-01-01', periods=n_days, freq='D')
-    symbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'NVDA'][:n_assets]
+# Test utilities
+class TestDataGenerator:
+    """Utility class for generating test data."""
     
-    data = []
-    for symbol in symbols:
-        np.random.seed(hash(symbol) % 2**32)
-        prices = 100 + np.cumsum(np.random.randn(n_days) * 0.02)
+    @staticmethod
+    def generate_returns(n_days: int, mean: float = 0.0005, std: float = 0.02) -> pd.Series:
+        """Generate random returns for testing."""
+        np.random.seed(42)
+        returns = np.random.normal(mean, std, n_days)
+        dates = pd.date_range(start='2020-01-01', periods=n_days, freq='D')
+        return pd.Series(returns, index=dates)
+    
+    @staticmethod
+    def generate_prices(initial_price: float = 100, n_days: int = 252) -> pd.Series:
+        """Generate price series from returns."""
+        returns = TestDataGenerator.generate_returns(n_days)
+        prices = initial_price * np.exp(np.cumsum(returns))
+        return prices
+    
+    @staticmethod
+    def generate_portfolio(initial_capital: float = 100000, n_days: int = 252) -> pd.DataFrame:
+        """Generate portfolio data for testing."""
+        returns = TestDataGenerator.generate_returns(n_days)
+        portfolio_values = initial_capital * np.exp(np.cumsum(returns))
         
-        for i, date in enumerate(dates):
-            data.append({
-                'symbol': symbol,
-                'date': date,
-                'open': prices[i] * (1 + np.random.randn() * 0.01),
-                'high': prices[i] * (1 + np.abs(np.random.randn()) * 0.02),
-                'low': prices[i] * (1 - np.abs(np.random.randn()) * 0.02),
-                'close': prices[i],
-                'volume': np.random.randint(1000000, 10000000)
-            })
-    
-    return pd.DataFrame(data)
-
-
-def generate_test_signals(n_days: int = 252) -> pd.DataFrame:
-    """Generate test trading signals."""
-    dates = pd.date_range(start='2024-01-01', periods=n_days, freq='D')
-    np.random.seed(42)
-    
-    signals = pd.DataFrame({
-        'date': dates,
-        'signal': np.random.choice([-1, 0, 1], n_days, p=[0.2, 0.6, 0.2]),
-        'confidence': np.random.uniform(0.5, 1.0, n_days),
-        'model': np.random.choice(['rf', 'xgb', 'lstm'], n_days)
-    })
-    
-    return signals
-
-
-# Performance testing utilities
-class PerformanceTracker:
-    """Track performance metrics during testing."""
-    
-    def __init__(self):
-        self.metrics = {}
-        self.start_time = None
-    
-    def start_timer(self, name: str):
-        """Start timing a process."""
-        self.start_time = datetime.now()
-        self.metrics[name] = {'start': self.start_time}
-    
-    def end_timer(self, name: str):
-        """End timing a process."""
-        if self.start_time:
-            duration = (datetime.now() - self.start_time).total_seconds()
-            self.metrics[name]['duration'] = duration
-            self.metrics[name]['end'] = datetime.now()
-    
-    def get_metrics(self) -> Dict:
-        """Get all tracked metrics."""
-        return self.metrics
-
-
-@pytest.fixture
-def performance_tracker():
-    """Performance tracker for testing."""
-    return PerformanceTracker()
-
-
-# Integration test helpers
-class IntegrationTestHelper:
-    """Helper class for integration tests."""
-    
-    def __init__(self):
-        self.data_manager = DataManager()
-        self.sentiment_aggregator = SentimentAggregator()
-        self.risk_manager = RiskManager()
-        self.backtesting_engine = BacktestingEngine()
-    
-    async def setup_test_environment(self):
-        """Setup test environment for integration tests."""
-        # Mock API responses
-        pass
-    
-    async def run_full_pipeline(self, symbol: str = 'AAPL', days: int = 30):
-        """Run the full trading pipeline."""
-        # 1. Fetch market data
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=days)
+        data = {
+            'portfolio_value': portfolio_values,
+            'cash': initial_capital * 0.1 + np.random.randn(n_days) * 1000,
+            'positions': np.random.randint(0, 5, n_days)
+        }
         
-        market_data = await self.data_manager.get_market_data(
-            symbol=symbol,
-            start_date=start_date.strftime('%Y-%m-%d'),
-            end_date=end_date.strftime('%Y-%m-%d')
-        )
-        
-        # 2. Get sentiment data
-        sentiment = await self.sentiment_aggregator.get_comprehensive_sentiment(
-            symbol=symbol,
-            lookback_days=days
-        )
-        
-        # 3. Calculate risk metrics
-        if not market_data.empty:
-            returns = market_data['close'].pct_change().dropna()
-            risk_metrics = self.risk_manager.calculate_risk_metrics(returns)
-            
-            return {
-                'market_data': market_data,
-                'sentiment': sentiment,
-                'risk_metrics': risk_metrics
-            }
-        
-        return None
+        dates = pd.date_range(start='2020-01-01', periods=n_days, freq='D')
+        df = pd.DataFrame(data, index=dates)
+        return df
 
-
-@pytest.fixture
-def integration_helper():
-    """Integration test helper."""
-    return IntegrationTestHelper()
+# Test assertions
+class TestAssertions:
+    """Custom assertions for trading tests."""
+    
+    @staticmethod
+    def assert_valid_returns(returns: pd.Series):
+        """Assert that returns are valid."""
+        assert not returns.isna().any(), "Returns contain NaN values"
+        assert returns.index.is_monotonic_increasing, "Returns index is not monotonic"
+        assert returns.dtype in [np.float64, np.float32], "Returns are not numeric"
+    
+    @staticmethod
+    def assert_valid_portfolio(portfolio: pd.DataFrame):
+        """Assert that portfolio data is valid."""
+        required_columns = ['portfolio_value', 'cash', 'positions']
+        for col in required_columns:
+            assert col in portfolio.columns, f"Missing required column: {col}"
+        
+        assert portfolio['portfolio_value'].min() > 0, "Portfolio value must be positive"
+        assert portfolio['cash'].min() >= 0, "Cash cannot be negative"
+        assert portfolio['positions'].min() >= 0, "Positions cannot be negative"
+    
+    @staticmethod
+    def assert_valid_signals(signals: pd.DataFrame):
+        """Assert that trading signals are valid."""
+        assert 'signal' in signals.columns, "Missing signal column"
+        assert signals['signal'].isin([-1, 0, 1]).all(), "Signals must be -1, 0, or 1"
+        
+        if 'signal_strength' in signals.columns:
+            assert (signals['signal_strength'] >= 0).all(), "Signal strength must be non-negative"
+            assert (signals['signal_strength'] <= 1).all(), "Signal strength must be <= 1"
+        
+        if 'confidence' in signals.columns:
+            assert (signals['confidence'] >= 0).all(), "Confidence must be non-negative"
+            assert (signals['confidence'] <= 1).all(), "Confidence must be <= 1"
