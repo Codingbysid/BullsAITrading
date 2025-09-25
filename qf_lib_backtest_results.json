@@ -1,0 +1,17 @@
+{
+  "status": "fallback",
+  "initial_capital": 100000,
+  "final_capital": 118945.70716520734,
+  "total_return": 0.18945707165207337,
+  "performance_metrics": {
+    "total_return": 0.18945707165207337,
+    "annualized_return": 0.1272535673997266,
+    "volatility": 0.31591356821562233,
+    "sharpe_ratio": 0.5,
+    "max_drawdown": -0.1,
+    "win_rate": 0.6,
+    "total_trades": 50
+  },
+  "trades": 50,
+  "portfolio_history": []
+}

@@ -346,7 +346,42 @@ class QFLibBacktester:
     def __init__(self, initial_capital: float = 100000):
         self.initial_capital = initial_capital
         self.symbols = ['AAPL', 'GOOGL', 'NVDA', 'META', 'AMZN', 'TSLA', 'MSFT', 'NFLX']
+        
+        # Setup QF-Lib configuration
+        self._setup_qf_lib_config()
         self.results = {}
+    
+    def _setup_qf_lib_config(self):
+        """Setup QF-Lib configuration and environment."""
+        try:
+            import os
+            from pathlib import Path
+            
+            # Set QF-Lib starting directory
+            project_root = Path(__file__).parent.parent.parent.parent
+            os.environ['QF_STARTING_DIRECTORY'] = str(project_root.absolute())
+            
+            # Set other QF-Lib environment variables
+            os.environ['QF_OUTPUT_DIRECTORY'] = str(project_root / "output")
+            os.environ['QF_DATA_DIRECTORY'] = str(project_root / "data")
+            os.environ['QF_CACHE_DIRECTORY'] = str(project_root / "cache")
+            os.environ['QF_LOGS_DIRECTORY'] = str(project_root / "logs")
+            
+            # Create necessary directories
+            directories = [
+                project_root / "output",
+                project_root / "data", 
+                project_root / "cache",
+                project_root / "logs"
+            ]
+            
+            for directory in directories:
+                directory.mkdir(parents=True, exist_ok=True)
+            
+            logger.info("✅ QF-Lib configuration setup completed")
+            
+        except Exception as e:
+            logger.error(f"❌ QF-Lib configuration setup failed: {e}")
         
     def create_synthetic_data(self, start_date: datetime, end_date: datetime) -> Dict[str, pd.DataFrame]:
         """Create synthetic market data for QF-Lib backtesting."""
