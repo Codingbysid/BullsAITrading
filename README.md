@@ -1,6 +1,6 @@
 # 🚀 QuantAI Trading Platform
 
-**Advanced AI-driven quantitative trading platform** with comprehensive risk management, real-time monitoring, institutional-grade backtesting capabilities, and interactive portfolio management. **Now featuring a focused 5-ticker strategy for AMZN, META, NVDA, GOOGL, and AAPL with QF-Lib environment support.**
+**Advanced AI-driven quantitative trading platform** with comprehensive risk management, real-time monitoring, institutional-grade backtesting capabilities, and interactive portfolio management. **Now featuring a focused 5-ticker strategy for AMZN, META, NVDA, GOOGL, and AAPL.**
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -43,20 +43,16 @@ pip install -r requirements.txt
 python run_quantai.py demo
 ```
 
-### **QF-Lib Environment Setup**
+### **Advanced Backtesting**
 
-For advanced backtesting with QF-Lib:
+For advanced quantitative backtesting:
 
 ```bash
-# Create QF-Lib environment
-conda create -n qf_env python=3.8
-conda activate qf_env
+# Run advanced backtester
+python run_quantai.py advanced
 
-# Install QF-Lib
-pip install qf-lib
-
-# Run QF-Lib backtester
-python scripts/run_qf_backtest.py
+# Or run directly
+python apps/backtesting/backtesters/advanced_quantitative_backtester.py
 ```
 
 ### **Quick Commands**

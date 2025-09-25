@@ -111,33 +111,29 @@ def run_backtest():
         print(f"❌ Error running backtest: {e}")
         print("🔄 This is expected if dependencies are not installed")
 
-def run_qf_backtest():
-    """Run QF-Lib backtester in qf_env environment"""
-    print("🎯 QuantAI Trading Platform - QF-Lib Backtester")
+def run_advanced_backtest():
+    """Run advanced quantitative backtester"""
+    print("🎯 QuantAI Trading Platform - Advanced Backtester")
     print("=" * 60)
     print()
     
-    print("🐍 QF-LIB ENVIRONMENT REQUIRED:")
-    print("   conda activate qf_env")
+    print("🚀 RUNNING ADVANCED BACKTESTER:")
+    print("   python apps/backtesting/backtesters/advanced_quantitative_backtester.py")
     print()
     
-    print("🚀 RUNNING QF-LIB BACKTESTER:")
-    print("   python scripts/run_qf_backtest.py")
-    print()
-    
-    # Try to run the QF-Lib backtester
+    # Try to run the advanced backtester
     try:
         import subprocess
         result = subprocess.run([
-            'python', 'scripts/run_qf_backtest.py'
+            'python', 'apps/backtesting/backtesters/advanced_quantitative_backtester.py'
         ], check=True)
-        print("✅ QF-Lib backtester completed successfully!")
+        print("✅ Advanced backtester completed successfully!")
     except subprocess.CalledProcessError:
-        print("❌ QF-Lib backtester failed")
-        print("Please ensure qf_env is activated: conda activate qf_env")
+        print("❌ Advanced backtester failed")
+        print("Please check the error messages above")
     except FileNotFoundError:
-        print("❌ QF-Lib runner script not found")
-        print("Please check the scripts/run_qf_backtest.py file")
+        print("❌ Advanced backtester script not found")
+        print("Please check the apps/backtesting/backtesters/advanced_quantitative_backtester.py file")
 
 def main():
     """Main entry point"""
@@ -147,20 +143,22 @@ def main():
             run_demo()
         elif mode == "backtest":
             run_backtest()
-        elif mode == "qf":
-            run_qf_backtest()
+        elif mode == "advanced":
+            run_advanced_backtest()
         else:
-            print("❌ Unknown mode. Use 'demo', 'backtest', or 'qf'")
+            print("❌ Unknown mode. Use 'demo', 'backtest', or 'advanced'")
     else:
         print("🚀 QuantAI Trading Platform")
         print("Usage:")
         print("  python run_quantai.py demo     # Show demo")
         print("  python run_quantai.py backtest # Run backtest")
-        print("  python run_quantai.py qf       # Run QF-Lib backtester")
+        print("  python run_quantai.py advanced # Run advanced backtester")
         print()
         print("Or run directly:")
         print("  python apps/backtesting/backtesters/simple_backtest.py")
-        print("  conda activate qf_env && python scripts/run_qf_backtest.py")
+        print("  python apps/backtesting/backtesters/standalone_backtest.py")
+        print("  python apps/backtesting/backtesters/advanced_quantitative_backtester.py")
+        print("  python apps/backtesting/backtesters/focused_5_ticker_backtester.py")
 
 if __name__ == "__main__":
     main()
