@@ -91,18 +91,18 @@ class SimpleBacktester:
         latest = symbol_data.iloc[-1]
         prev = symbol_data.iloc[-2]
         
-        # Simple strategy: RSI + Moving Average + Bollinger Bands
+        # IMPROVED strategy: More aggressive thresholds for more trades
         buy_conditions = [
-            latest['rsi'] < 30,  # Oversold
+            latest['rsi'] < 40,  # LOWERED from 30 to 40 (less oversold)
             latest['close'] > latest['sma_5'],  # Above short MA
-            latest['bb_position'] < 0.2,  # Near lower Bollinger Band
+            latest['bb_position'] < 0.3,  # LOWERED from 0.2 to 0.3
             latest['close'] > prev['close']  # Price increasing
         ]
         
         sell_conditions = [
-            latest['rsi'] > 70,  # Overbought
+            latest['rsi'] > 60,  # LOWERED from 70 to 60 (less overbought)
             latest['close'] < latest['sma_5'],  # Below short MA
-            latest['bb_position'] > 0.8,  # Near upper Bollinger Band
+            latest['bb_position'] > 0.7,  # LOWERED from 0.8 to 0.7
             latest['close'] < prev['close']  # Price decreasing
         ]
         
@@ -110,11 +110,11 @@ class SimpleBacktester:
         buy_score = sum(buy_conditions)
         sell_score = sum(sell_conditions)
         
-        # Generate signal
-        if buy_score >= 3:
-            return {'signal': 'BUY', 'strength': min(0.2, buy_score / 4)}
-        elif sell_score >= 3:
-            return {'signal': 'SELL', 'strength': min(0.2, sell_score / 4)}
+        # Generate signal - IMPROVED THRESHOLDS for more trades
+        if buy_score >= 1:  # LOWERED from 3 to 1 (much more sensitive)
+            return {'signal': 'BUY', 'strength': min(0.3, buy_score / 4)}  # INCREASED max strength
+        elif sell_score >= 1:  # LOWERED from 3 to 1 (much more sensitive)
+            return {'signal': 'SELL', 'strength': min(0.3, sell_score / 4)}  # INCREASED max strength
         else:
             return {'signal': 'HOLD', 'strength': 0.0}
     
@@ -214,8 +214,8 @@ class SimpleBacktester:
             price = market_data['close']
             strength = signal['strength']
             
-            # Calculate position size
-            max_position_value = self._get_total_value() * 0.2 * strength  # Max 20% * strength
+            # Calculate position size - IMPROVED FOR MORE ACTIVITY
+            max_position_value = self._get_total_value() * 0.3 * strength  # INCREASED from 20% to 30%
             quantity = int(max_position_value / price)
             
             if quantity == 0:

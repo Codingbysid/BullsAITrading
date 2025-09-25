@@ -2,7 +2,7 @@
 
 ## Overview
 
-The QuantAI Trading Platform is a comprehensive AI-driven quantitative trading system that combines advanced backtesting, risk management, machine learning capabilities, and interactive portfolio management with reinforcement learning. The platform focuses on the 5 flagship stocks: **AMZN, META, NVDA, GOOGL, and AAPL**.
+The QuantAI Trading Platform is a comprehensive AI-driven quantitative trading system that combines advanced backtesting, risk management, machine learning capabilities, and interactive portfolio management with reinforcement learning. The platform implements the original PRD data sources and APIs with clean project structure, focusing on the 5 flagship stocks: **AMZN, META, NVDA, GOOGL, and AAPL**.
 
 ## 🎯 System Architecture
 
