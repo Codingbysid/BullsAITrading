@@ -13,7 +13,7 @@ QuantAI Trading Platform is a comprehensive, institutional-grade quantitative tr
 - **🤖 Advanced AI/ML Models**: Random Forest, XGBoost, LSTM, Reinforcement Learning, Ensemble Learning
 - **📈 Real-Time Market Data**: Multiple data sources with fallback mechanisms
 - **🛡️ Risk Management**: Kelly Criterion, VaR, Max Drawdown, Portfolio Optimization
-- **📊 Backtesting Systems**: 5 different backtesting approaches for comprehensive validation
+- **📊 Backtesting Systems**: 4 different backtesting approaches for comprehensive validation
 - **💼 Portfolio Management**: Interactive portfolio tracking with AI recommendations
 - **🔄 Reinforcement Learning**: Continuous improvement through user feedback
 - **🌐 Web Interface**: FastAPI backend with Streamlit dashboard

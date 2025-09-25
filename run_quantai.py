@@ -130,9 +130,9 @@ def run_advanced_backtest():
         print("✅ Advanced backtester completed successfully!")
     except subprocess.CalledProcessError:
         print("❌ Advanced backtester failed")
-        print("Please check the error messages above")
+        print("Please check the backtester file")
     except FileNotFoundError:
-        print("❌ Advanced backtester script not found")
+        print("❌ Advanced backtester not found")
         print("Please check the apps/backtesting/backtesters/advanced_quantitative_backtester.py file")
 
 def main():
