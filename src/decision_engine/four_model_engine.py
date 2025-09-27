@@ -21,6 +21,7 @@ import logging
 from ..models.sentiment_model import SentimentAnalysisModel
 from ..models.quantitative_model import QuantitativeRiskModel  
 from ..models.ml_ensemble_model import MLEnsembleModel
+from ..models.trained_ml_ensemble import TrainedMLEnsembleModel
 from ..models.rl_decider_agent import RLDeciderAgent
 from ..models.base_models import ModelOutput, ModelValidator, RiskAdjuster
 
@@ -34,7 +35,8 @@ class FourModelDecisionEngine:
         # Initialize four models
         self.sentiment_model = SentimentAnalysisModel()
         self.quantitative_model = QuantitativeRiskModel()
-        self.ml_ensemble_model = MLEnsembleModel()
+        # Use trained ML ensemble model instead of the original
+        self.ml_ensemble_model = TrainedMLEnsembleModel()
         self.rl_decider_agent = RLDeciderAgent()
         
         # Model weights for transparency (RL agent uses these as inputs)
