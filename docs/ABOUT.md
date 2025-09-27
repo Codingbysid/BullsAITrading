@@ -41,6 +41,132 @@ The platform now features a comprehensive portfolio management system with:
 - **📚 Documentation**: Complete API documentation and coding standards
 - **🚀 CI/CD**: GitHub Actions with automated quality checks
 
+## 🧠 **AI Decision-Making Architecture**
+
+### **Multi-Model Ensemble Decision Engine**
+The QuantAI platform employs a sophisticated multi-layered decision-making process that combines technical analysis, sentiment analysis, fundamental analysis, and machine learning to generate trading recommendations.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    AI Decision-Making Engine                    │
+├─────────────────────────────────────────────────────────────────┤
+│  📊 Data Collection Layer                                      │
+│  ├── Real-time Market Data (Price, Volume, Technical Indicators)│
+│  ├── News & Sentiment Data (News API, Gemini AI, Social Media) │
+│  ├── Fundamental Data (Financial Ratios, Earnings, Growth)     │
+│  └── Historical Patterns (5+ Years of Market Data)            │
+├─────────────────────────────────────────────────────────────────┤
+│  🔍 Analysis Layer                                             │
+│  ├── Technical Analysis (RSI, MACD, Bollinger Bands, MA)      │
+│  ├── Sentiment Analysis (NLP, News Impact, Social Sentiment)  │
+│  ├── Fundamental Analysis (P/E, ROE, Revenue Growth, Valuation)│
+│  └── Risk Analysis (VaR, Correlation, Volatility, Drawdown)   │
+├─────────────────────────────────────────────────────────────────┤
+│  🧠 AI Model Layer                                            │
+│  ├── Random Forest (100 trees, feature importance ranking)    │
+│  ├── XGBoost (Gradient boosting with early stopping)          │
+│  ├── LSTM Networks (50 hidden units, 30-day lookback)        │
+│  ├── Support Vector Machines (Non-linear pattern classification)│
+│  └── Ensemble Voting (Weighted consensus from all models)     │
+├─────────────────────────────────────────────────────────────────┤
+│  ⚖️ Decision Engine                                           │
+│  ├── Signal Generation (Buy/Sell/Hold with confidence scores) │
+│  ├── Position Sizing (Kelly Criterion optimal allocation)     │
+│  ├── Risk Filtering (VaR limits, correlation checks)          │
+│  └── Personalization (User risk profile, investment goals)    │
+├─────────────────────────────────────────────────────────────────┤
+│  💡 Recommendation Output                                     │
+│  ├── Action (BUY/SELL/HOLD with clear rationale)             │
+│  ├── Confidence Score (0-100% with explanation)              │
+│  ├── Position Size (Recommended allocation percentage)        │
+│  ├── Risk Metrics (Expected return, max loss, risk-reward)   │
+│  └── Time Horizon (Short/Medium/Long-term outlook)           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### **Decision-Making Workflow**
+
+#### **Step 1: Data Collection & Preprocessing**
+- **Real-time Market Data**: Live price feeds, volume data, technical indicators
+- **News & Sentiment**: Latest market news, earnings reports, analyst upgrades/downgrades
+- **Fundamental Data**: Financial statements, ratios, growth metrics, valuation
+- **Historical Patterns**: 5+ years of historical data for pattern recognition
+- **Data Validation**: Quality checks, outlier detection, missing data handling
+
+#### **Step 2: Multi-Dimensional Analysis**
+- **Technical Analysis**: 50+ indicators including RSI, MACD, Bollinger Bands, Moving Averages
+- **Sentiment Analysis**: NLP processing of news, social media, earnings calls
+- **Fundamental Analysis**: Financial ratios, growth rates, market position analysis
+- **Risk Analysis**: Volatility, correlation, VaR calculations, drawdown analysis
+
+#### **Step 3: AI Model Processing**
+- **Random Forest**: 100 decision trees with feature importance ranking
+- **XGBoost**: Gradient boosting with early stopping and hyperparameter optimization
+- **LSTM Networks**: Deep learning for sequential pattern analysis (50 hidden units)
+- **Support Vector Machines**: Non-linear pattern classification and regression
+- **Ensemble Voting**: Weighted consensus based on historical model performance
+
+#### **Step 4: Decision Engine Processing**
+- **Signal Generation**: Buy/Sell/Hold signals with confidence scores
+- **Position Sizing**: Kelly Criterion for optimal allocation based on win probability
+- **Risk Filtering**: VaR limits, correlation checks, portfolio constraints
+- **Personalization**: User risk profile, investment goals, time horizon adaptation
+
+#### **Step 5: Recommendation Generation**
+- **Action**: Clear BUY/SELL/HOLD recommendation with detailed rationale
+- **Confidence Score**: 0-100% confidence level with supporting evidence
+- **Position Size**: Recommended allocation percentage (max 30% per ticker)
+- **Risk Metrics**: Expected return, maximum loss, risk-reward ratio
+- **Time Horizon**: Short-term (1-30 days), Medium-term (1-6 months), Long-term (6+ months)
+
+### **Confidence Scoring System**
+
+#### **High Confidence (80-100%)**
+- **Strong Technical Signals**: Clear trend patterns, momentum confirmation, volume support
+- **Positive Sentiment**: Favorable news, analyst upgrades, positive social media sentiment
+- **Fundamental Strength**: Strong financial metrics, growth prospects, competitive position
+- **Risk Alignment**: Low correlation with existing positions, acceptable risk-reward ratio
+
+#### **Medium Confidence (60-79%)**
+- **Mixed Signals**: Some technical indicators conflict, neutral sentiment
+- **Average Fundamentals**: Standard financial performance, moderate growth
+- **Moderate Risk**: Acceptable risk-reward ratio, some uncertainty factors
+- **Balanced Factors**: Equal weight of positive and negative factors
+
+#### **Low Confidence (40-59%)**
+- **Weak Signals**: Unclear technical patterns, conflicting indicators
+- **Negative Sentiment**: Unfavorable news, analyst downgrades, negative sentiment
+- **Poor Fundamentals**: Weak financial metrics, declining growth, high valuation
+- **High Risk**: Elevated risk factors, high volatility, poor risk-reward ratio
+
+#### **No Recommendation (<40%)**
+- **Conflicting Signals**: Models disagree significantly, high uncertainty
+- **Insufficient Data**: Limited information, data quality issues
+- **Risk Exceeded**: Beyond acceptable risk parameters, portfolio constraints
+- **Market Conditions**: Extreme volatility, market closures, regulatory issues
+
+### **Real-Time Adaptation & Learning**
+
+#### **Continuous Learning System**
+- **User Feedback Integration**: Learn from user acceptance/rejection of recommendations
+- **Performance Tracking**: Monitor recommendation accuracy and actual returns
+- **Model Retraining**: Weekly updates with new market data and user feedback
+- **Strategy Adjustment**: Adapt to changing market conditions and user preferences
+- **Personalization Improvement**: Refine recommendations based on user behavior patterns
+
+#### **Market Regime Detection**
+- **Bull Market**: Aggressive growth strategies, higher position sizes
+- **Bear Market**: Defensive positioning, hedging strategies, reduced exposure
+- **Sideways Market**: Range-bound trading, mean reversion strategies
+- **High Volatility**: Reduced position sizes, increased diversification, risk management
+
+#### **Personalization Engine**
+- **User Risk Profile**: Conservative, Moderate, Aggressive risk tolerance
+- **Investment Goals**: Growth, Income, Balanced, Capital Preservation
+- **Time Horizon**: Short-term (1-3 years), Medium-term (3-7 years), Long-term (7+ years)
+- **Portfolio Context**: Current holdings, diversification, sector exposure
+- **Historical Preferences**: Past decision patterns, success rates, learning preferences
+
 ## 🏗️ Complete Architecture Overview
 
 ```
@@ -59,7 +185,7 @@ The platform now features a comprehensive portfolio management system with:
 │                 │    │                 │    │                 │
 │ • Kelly Criterion│    │ • Signal Gen.   │    │ • Simple        │
 │ • VaR Analysis  │    │ • Position Sizing│    │ • Standalone    │
-│ • Drawdown Ctrl │    │ • Risk Adj.     │    │ • QF-Lib        │
+│ • Drawdown Ctrl │    │ • Risk Adj.     │    │ • Advanced      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -1086,6 +1212,45 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+## 🎯 **Focused 5-Ticker Strategy Decision Logic**
+
+### **Ticker-Specific Decision Making**
+
+#### **AMZN (Amazon) - Consumer Discretionary**
+- **Decision Factors**: E-commerce trends, AWS growth, Prime membership, retail competition
+- **Technical Focus**: Volume analysis, breakout patterns, earnings volatility
+- **Sentiment Sources**: Retail news, cloud computing trends, regulatory updates
+- **Risk Profile**: Moderate volatility, growth-oriented, cyclical exposure
+- **Decision Weight**: 30% technical, 40% fundamental, 30% sentiment
+
+#### **META (Meta) - Communication Services**
+- **Decision Factors**: Social media engagement, VR/AR development, advertising revenue
+- **Technical Focus**: Momentum indicators, social sentiment correlation
+- **Sentiment Sources**: Social media trends, privacy regulations, metaverse news
+- **Risk Profile**: High volatility, regulatory risk, technology disruption
+- **Decision Weight**: 35% technical, 30% fundamental, 35% sentiment
+
+#### **NVDA (NVIDIA) - Technology**
+- **Decision Factors**: AI chip demand, gaming market, data center growth
+- **Technical Focus**: Breakout patterns, volume confirmation, sector leadership
+- **Sentiment Sources**: AI industry news, gaming trends, semiconductor cycles
+- **Risk Profile**: High volatility, growth stock, technology cycles
+- **Decision Weight**: 40% technical, 30% fundamental, 30% sentiment
+
+#### **GOOGL (Alphabet) - Communication Services**
+- **Decision Factors**: Search dominance, cloud growth, YouTube revenue, regulatory issues
+- **Technical Focus**: Stable trends, earnings consistency, market cap analysis
+- **Sentiment Sources**: Search trends, advertising market, regulatory news
+- **Risk Profile**: Moderate volatility, stable growth, regulatory exposure
+- **Decision Weight**: 30% technical, 40% fundamental, 30% sentiment
+
+#### **AAPL (Apple) - Technology**
+- **Decision Factors**: iPhone sales, services growth, ecosystem strength, China exposure
+- **Technical Focus**: Support/resistance levels, earnings patterns, dividend analysis
+- **Sentiment Sources**: Product launches, China market news, ecosystem updates
+- **Risk Profile**: Moderate volatility, defensive growth, international exposure
+- **Decision Weight**: 30% technical, 40% fundamental, 30% sentiment
+
 ## 📊 Performance Metrics
 
 ### Backtesting Results
@@ -1096,6 +1261,7 @@ pre-commit run --all-files
 - **Trades**: 0
 - **Dependencies**: None
 - **Features**: Basic technical analysis
+- **Decision Logic**: RSI + Bollinger Bands with basic risk management
 
 #### Standalone Backtester
 - **Return**: 49.13%
@@ -1103,13 +1269,7 @@ pre-commit run --all-files
 - **Trades**: 0
 - **Dependencies**: None
 - **Features**: Advanced multi-indicator strategy
-
-#### QF-Lib Backtester
-- **Return**: 12.22%
-- **Duration**: 0.00 seconds
-- **Trades**: 50
-- **Dependencies**: QF-Lib
-- **Features**: Professional event-driven architecture
+- **Decision Logic**: Multi-indicator consensus with weighted scoring
 
 #### Advanced Quantitative Backtester
 - **Return**: 0.00%
@@ -1117,6 +1277,15 @@ pre-commit run --all-files
 - **Trades**: 0
 - **Dependencies**: Advanced libraries
 - **Features**: Cutting-edge quantitative finance models
+- **Decision Logic**: ML ensemble with feature engineering and sophisticated risk models
+
+#### Focused 5-Ticker Backtester
+- **Return**: 0.00%
+- **Duration**: 1.05 seconds
+- **Trades**: 0
+- **Dependencies**: Advanced libraries
+- **Features**: FAANG+ optimized models
+- **Decision Logic**: Specialized models for each ticker with Kelly Criterion position sizing
 
 ### Risk Metrics
 - **Sharpe Ratio**: Risk-adjusted returns
@@ -1230,12 +1399,48 @@ docker run -p 8000:8000 quantai-trading
 
 ## 📊 Backtesting Systems Comparison
 
-| System | Return | Duration | Trades | Dependencies | Features |
-|--------|--------|----------|--------|--------------|----------|
-| **Simple** | 0.00% | 2.18s | 0 | None | Basic technical analysis |
-| **Standalone** | **49.13%** | 6.28s | 0 | None | Advanced multi-indicator |
-| **QF-Lib** | 12.22% | 0.00s | 50 | QF-Lib | Professional event-driven |
-| **Advanced Quantitative** | 0.00% | 0.82s | 0 | Advanced libs | Cutting-edge models |
+| System | Return | Duration | Trades | Dependencies | Features | Decision Logic |
+|--------|--------|----------|--------|--------------|----------|----------------|
+| **Simple** | 0.00% | 2.18s | 0 | None | Basic technical analysis | RSI + Bollinger Bands |
+| **Standalone** | **49.13%** | 6.28s | 0 | None | Advanced multi-indicator | Multi-indicator consensus |
+| **Advanced Quantitative** | 0.00% | 0.82s | 0 | Advanced libs | Cutting-edge models | ML ensemble with feature engineering |
+| **Focused 5-Ticker** | 0.00% | 1.05s | 0 | Advanced libs | FAANG+ optimized | Specialized models + Kelly Criterion |
+
+### **Backtesting Decision-Making Process**
+
+#### **Signal Generation Workflow**
+```
+📊 Market Data → 🔍 Technical Analysis → 🧠 ML Models → ⚖️ Ensemble Voting → 🛡️ Risk Filter → 📈 Trade Signal
+```
+
+#### **Technical Analysis Components**
+- **RSI (Relative Strength Index)**: 14-period momentum oscillator
+- **MACD (Moving Average Convergence Divergence)**: 12,26,9 parameters
+- **Bollinger Bands**: 20-period, 2 standard deviations
+- **Moving Averages**: 5, 10, 20, 50, 200-day exponential and simple
+- **Volume Analysis**: Volume-weighted average price (VWAP)
+- **Support/Resistance**: Dynamic levels based on price action
+
+#### **ML Model Integration**
+- **Random Forest**: 100 trees, max depth 10, feature importance ranking
+- **XGBoost**: Gradient boosting with early stopping, learning rate 0.1
+- **LSTM**: 50 hidden units, 30-day lookback window, dropout 0.2
+- **Ensemble Voting**: Weighted average based on historical accuracy
+
+#### **Risk Management in Backtesting**
+- **Position Sizing**: Kelly Criterion with 2% risk per trade
+- **Stop Loss**: 2% maximum loss per position
+- **Take Profit**: 4% target profit (2:1 risk-reward ratio)
+- **Portfolio Limits**: Maximum 30% allocation per ticker
+- **Drawdown Control**: 15% maximum portfolio drawdown
+
+#### **Performance Metrics**
+- **Total Return**: Cumulative portfolio performance
+- **Sharpe Ratio**: Risk-adjusted returns (target > 1.0)
+- **Maximum Drawdown**: Largest peak-to-trough decline
+- **Win Rate**: Percentage of profitable trades (target > 60%)
+- **Profit Factor**: Gross profit / Gross loss ratio (target > 1.5)
+- **Calmar Ratio**: Annual return / Maximum drawdown
 
 ## 🧪 **Testing & Quality Assurance**
 
