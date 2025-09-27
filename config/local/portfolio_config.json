@@ -1,0 +1,30 @@
+{
+  "user_id": "local_user",
+  "portfolio_id": "local_portfolio",
+  "initial_capital": 100000.0,
+  "risk_tolerance": 0.05,
+  "symbols": [
+    "AAPL",
+    "AMZN",
+    "GOOGL",
+    "META",
+    "NVDA"
+  ],
+  "model_weights": {
+    "sentiment": 0.25,
+    "quantitative": 0.25,
+    "ml_ensemble": 0.35,
+    "rl_agent": 1.0
+  },
+  "trading_settings": {
+    "max_position_size": 0.3,
+    "max_portfolio_risk": 0.15,
+    "rebalance_frequency": "weekly",
+    "stop_loss": 0.1,
+    "take_profit": 0.2
+  },
+  "data_sources": {
+    "use_real_data": false,
+    "update_frequency": "daily"
+  }
+}
