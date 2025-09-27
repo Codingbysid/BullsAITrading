@@ -2,7 +2,7 @@
 
 ## Overview
 
-The QuantAI Trading Platform is a comprehensive AI-driven quantitative trading system that combines advanced backtesting, risk management, machine learning capabilities, and interactive portfolio management with reinforcement learning. The platform implements the original PRD data sources and APIs with clean project structure, focusing on the 5 flagship stocks: **AMZN, META, NVDA, GOOGL, and AAPL**.
+The QuantAI Trading Platform is a comprehensive AI-driven quantitative trading system that combines advanced backtesting, risk management, machine learning capabilities, and interactive portfolio management with reinforcement learning. The platform implements the original PRD data sources and APIs with clean project structure, focusing on the 5 flagship stocks: **AMZN, META, NVDA, GOOGL, and AAPL**. **Now featuring a unified utility architecture with DRY principle applied throughout the entire codebase.**
 
 ## 🎯 System Architecture
 
@@ -40,10 +40,19 @@ The QuantAI Trading Platform is a comprehensive AI-driven quantitative trading s
 │  └── Performance Analytics                                     │
 ├─────────────────────────────────────────────────────────────────┤
 │  📊  Backtesting Layer                                        │
-│  ├── 4 Backtesting Systems                                     │
+│  ├── Unified Backtesting Systems (DRY Principle)              │
+│  ├── Base Backtester Class                                     │
 │  ├── Scientific Validation                                     │
 │  ├── Performance Analytics                                     │
 │  └── Risk Management                                           │
+├─────────────────────────────────────────────────────────────────┤
+│  🛠️  Unified Utility Layer                                   │
+│  ├── Common Imports & Utilities                                │
+│  ├── Performance Metrics Calculator                            │
+│  ├── Data Processing Pipeline                                  │
+│  ├── Risk Management Utilities                                 │
+│  ├── Configuration Manager                                     │
+│  └── Feature Engineering Pipeline                              │
 ├─────────────────────────────────────────────────────────────────┤
 │  🧪  Testing & Quality Layer                                  │
 │  ├── Unit Testing (pytest)                                     │
@@ -54,6 +63,78 @@ The QuantAI Trading Platform is a comprehensive AI-driven quantitative trading s
 │  └── CI/CD Pipeline (GitHub Actions)                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+## 🛠️ Unified Utility Architecture
+
+### **DRY Principle Implementation**
+
+The platform now features a comprehensive unified utility architecture that eliminates code duplication across the entire codebase:
+
+#### **Core Utility Modules**
+
+```
+src/utils/
+├── common_imports.py        # Standardized imports, logging, and common utilities
+├── performance_metrics.py   # Unified performance metrics calculation
+├── data_processing.py       # Standardized data validation and processing
+├── risk_utils.py            # Comprehensive risk management utilities
+├── config_manager.py        # Centralized configuration management
+└── feature_engineering.py   # Advanced feature engineering pipeline
+```
+
+#### **Shared Utility Classes**
+
+1. **PerformanceCalculator**: Single source for all performance metrics
+   - Sharpe ratio, Sortino ratio, Calmar ratio, MAR ratio
+   - Information ratio, Alpha, Beta calculations
+   - VaR, CVaR, Maximum drawdown
+   - Win rate, Profit factor, Trade statistics
+   - Portfolio metrics and benchmark-relative analysis
+
+2. **DataProcessor**: Unified data validation and processing
+   - Price data validation and cleaning
+   - Synthetic data generation for testing
+   - Technical indicators calculation
+   - Data resampling and outlier detection
+   - Feature creation and ML data preparation
+
+3. **RiskCalculator**: Comprehensive risk management
+   - Kelly Criterion position sizing
+   - VaR and CVaR calculations
+   - Portfolio risk metrics
+   - Beta and Alpha calculations
+   - Risk parity and portfolio optimization
+   - Correlation and tracking error analysis
+
+4. **ConfigManager**: Centralized configuration management
+   - Environment variable support
+   - JSON and YAML configuration files
+   - Database, API, Risk, Trading, Model configurations
+   - Security and logging settings
+   - Configuration validation and summary
+
+5. **FeatureEngineer**: Advanced feature engineering
+   - 50+ technical indicators
+   - Lag and rolling features
+   - Interaction and polynomial features
+   - Time-based features
+   - Feature scaling and selection
+   - ML data preparation
+
+#### **Eliminated Duplication**
+
+- **25+ duplicate logger setups** → Single `setup_logger()` function
+- **20+ duplicate pandas/numpy imports** → Standardized common imports
+- **15+ duplicate performance calculations** → Unified PerformanceCalculator
+- **10+ duplicate risk management functions** → Comprehensive RiskCalculator
+- **8+ duplicate configuration patterns** → Centralized ConfigManager
+
+#### **Graceful Fallbacks**
+
+- **SciPy optimization** with simple alternatives when unavailable
+- **scikit-learn ML features** with basic implementations
+- **Comprehensive error handling** and logging consistency
+- **Optional dependency management** for maximum compatibility
 
 ## 🗄️ Database Architecture
 
