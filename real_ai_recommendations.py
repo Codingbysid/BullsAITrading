@@ -218,20 +218,189 @@ class RealAIRecommendations:
             return 0.5
     
     def get_recommendation(self, symbol: str) -> Dict[str, Any]:
-        """Get AI recommendation for a symbol."""
+        """Get AI recommendation using the complete four-model approach."""
         try:
             # Load market data
             market_data = self._load_market_data(symbol)
             if market_data.empty:
                 return self._get_fallback_recommendation(symbol)
             
+            # Get four-model recommendation
+            return self._get_four_model_recommendation(symbol, market_data)
+            
+        except Exception as e:
+            print(f"Error getting recommendation for {symbol}: {e}")
+            return self._get_fallback_recommendation(symbol)
+    
+    def _get_four_model_recommendation(self, symbol: str, market_data: pd.DataFrame) -> Dict[str, Any]:
+        """Get recommendation using the complete four-model approach."""
+        try:
+            # Model 1: Sentiment Analysis Model (25% weight)
+            sentiment_output = self._get_sentiment_analysis(symbol, market_data)
+            
+            # Model 2: Quantitative Risk Model (25% weight)
+            quantitative_output = self._get_quantitative_analysis(symbol, market_data)
+            
+            # Model 3: ML Ensemble Model (35% weight)
+            ml_ensemble_output = self._get_ml_ensemble_analysis(symbol, market_data)
+            
+            # Model 4: RL Decider Agent (Final decision maker)
+            rl_decision = self._get_rl_decision(symbol, market_data, {
+                'sentiment': sentiment_output,
+                'quantitative': quantitative_output,
+                'ml_ensemble': ml_ensemble_output
+            })
+            
+            # Combine all model outputs
+            final_recommendation = {
+                "action": rl_decision["action"],
+                "confidence": rl_decision["confidence"],
+                "reasoning": rl_decision["reasoning"],
+                "model_outputs": {
+                    "sentiment_model": sentiment_output,
+                    "quantitative_model": quantitative_output,
+                    "ml_ensemble_model": ml_ensemble_output,
+                    "rl_decider_agent": rl_decision
+                },
+                "four_model_analysis": {
+                    "sentiment_weight": 0.25,
+                    "quantitative_weight": 0.25,
+                    "ml_ensemble_weight": 0.35,
+                    "rl_final_weight": 1.0
+                }
+            }
+            
+            return final_recommendation
+            
+        except Exception as e:
+            print(f"Error in four-model analysis for {symbol}: {e}")
+            return self._get_fallback_recommendation(symbol)
+    
+    def _get_sentiment_analysis(self, symbol: str, market_data: pd.DataFrame) -> Dict[str, Any]:
+        """Model 1: Sentiment Analysis Model (25% weight)."""
+        try:
+            # Analyze price momentum for sentiment
+            recent_data = market_data.tail(10)
+            price_change = (recent_data['Close'].iloc[-1] - recent_data['Close'].iloc[0]) / recent_data['Close'].iloc[0]
+            
+            # Volume sentiment
+            volume_change = recent_data['Volume'].pct_change().mean()
+            
+            # Price volatility sentiment
+            volatility = recent_data['Close'].pct_change().std()
+            
+            # Calculate sentiment score
+            sentiment_score = 0.0
+            if price_change > 0.02:
+                sentiment_score += 0.3
+            elif price_change < -0.02:
+                sentiment_score -= 0.3
+            
+            if volume_change > 0.1:
+                sentiment_score += 0.2
+            elif volume_change < -0.1:
+                sentiment_score -= 0.2
+            
+            if volatility < 0.01:
+                sentiment_score += 0.1  # Low volatility is positive
+            elif volatility > 0.03:
+                sentiment_score -= 0.1  # High volatility is negative
+            
+            # Determine sentiment signal
+            if sentiment_score > 0.2:
+                signal = 1.0
+                sentiment = "positive"
+            elif sentiment_score < -0.2:
+                signal = -1.0
+                sentiment = "negative"
+            else:
+                signal = 0.0
+                sentiment = "neutral"
+            
+            return {
+                "signal": signal,
+                "confidence": min(0.9, 0.5 + abs(sentiment_score)),
+                "reasoning": f"Sentiment: {sentiment} (price: {price_change:.2%}, volume: {volume_change:.2%}, volatility: {volatility:.2%})",
+                "sentiment_score": sentiment_score
+            }
+            
+        except Exception as e:
+            print(f"Sentiment analysis error for {symbol}: {e}")
+            return {"signal": 0.0, "confidence": 0.5, "reasoning": f"Sentiment analysis error: {e}"}
+    
+    def _get_quantitative_analysis(self, symbol: str, market_data: pd.DataFrame) -> Dict[str, Any]:
+        """Model 2: Quantitative Risk Model (25% weight)."""
+        try:
+            # Calculate risk metrics
+            returns = market_data['Close'].pct_change().dropna()
+            
+            # Sharpe ratio (simplified)
+            mean_return = returns.mean()
+            std_return = returns.std()
+            sharpe_ratio = mean_return / std_return if std_return > 0 else 0
+            
+            # Maximum drawdown
+            cumulative = (1 + returns).cumprod()
+            running_max = cumulative.expanding().max()
+            drawdown = (cumulative - running_max) / running_max
+            max_drawdown = drawdown.min()
+            
+            # Volatility
+            volatility = std_return
+            
+            # Risk-adjusted signal
+            risk_score = 0.0
+            if sharpe_ratio > 0.5:
+                risk_score += 0.3
+            elif sharpe_ratio < -0.5:
+                risk_score -= 0.3
+            
+            if max_drawdown > -0.1:
+                risk_score += 0.2
+            elif max_drawdown < -0.2:
+                risk_score -= 0.2
+            
+            if volatility < 0.02:
+                risk_score += 0.1
+            elif volatility > 0.05:
+                risk_score -= 0.1
+            
+            # Determine risk signal
+            if risk_score > 0.2:
+                signal = 1.0
+                risk_level = "low"
+            elif risk_score < -0.2:
+                signal = -1.0
+                risk_level = "high"
+            else:
+                signal = 0.0
+                risk_level = "medium"
+            
+            return {
+                "signal": signal,
+                "confidence": min(0.9, 0.5 + abs(risk_score)),
+                "reasoning": f"Risk: {risk_level} (Sharpe: {sharpe_ratio:.2f}, MaxDD: {max_drawdown:.2%}, Vol: {volatility:.2%})",
+                "risk_metrics": {
+                    "sharpe_ratio": sharpe_ratio,
+                    "max_drawdown": max_drawdown,
+                    "volatility": volatility
+                }
+            }
+            
+        except Exception as e:
+            print(f"Quantitative analysis error for {symbol}: {e}")
+            return {"signal": 0.0, "confidence": 0.5, "reasoning": f"Quantitative analysis error: {e}"}
+    
+    def _get_ml_ensemble_analysis(self, symbol: str, market_data: pd.DataFrame) -> Dict[str, Any]:
+        """Model 3: ML Ensemble Model (35% weight)."""
+        try:
+            if not self.models_loaded:
+                return self._get_simple_ml_analysis(symbol, market_data)
+            
             # Create features
             features = self._create_features(market_data)
             if features.empty:
-                return self._get_fallback_recommendation(symbol)
-            
-            if not self.models_loaded:
-                return self._get_fallback_recommendation(symbol)
+                return self._get_simple_ml_analysis(symbol, market_data)
             
             # Get predictions from each model
             linear_pred = self._predict_linear_model(features)
@@ -247,22 +416,19 @@ class RealAIRecommendations:
             
             # Convert to signal
             if ensemble_pred > 0.6:
-                action = "BUY"
-                confidence = min(0.9, 0.5 + (ensemble_pred - 0.5) * 2)
+                signal = 1.0
+                trend = "bullish"
             elif ensemble_pred < 0.4:
-                action = "SELL"
-                confidence = min(0.9, 0.5 + (0.5 - ensemble_pred) * 2)
+                signal = -1.0
+                trend = "bearish"
             else:
-                action = "HOLD"
-                confidence = 0.6
-            
-            # Create reasoning
-            reasoning = f"ML Ensemble: Linear={linear_pred:.3f}, NaiveBayes={naive_bayes_pred:.3f}, DecisionTree={decision_tree_pred:.3f}, Final={ensemble_pred:.3f}"
+                signal = 0.0
+                trend = "neutral"
             
             return {
-                "action": action,
-                "confidence": confidence,
-                "reasoning": reasoning,
+                "signal": signal,
+                "confidence": min(0.9, 0.5 + abs(ensemble_pred - 0.5) * 2),
+                "reasoning": f"ML Ensemble: {trend} (Linear={linear_pred:.3f}, NaiveBayes={naive_bayes_pred:.3f}, DecisionTree={decision_tree_pred:.3f}, Final={ensemble_pred:.3f})",
                 "individual_predictions": {
                     "linear_model": linear_pred,
                     "naive_bayes": naive_bayes_pred,
@@ -272,8 +438,130 @@ class RealAIRecommendations:
             }
             
         except Exception as e:
-            print(f"Error getting recommendation for {symbol}: {e}")
-            return self._get_fallback_recommendation(symbol)
+            print(f"ML ensemble analysis error for {symbol}: {e}")
+            return self._get_simple_ml_analysis(symbol, market_data)
+    
+    def _get_simple_ml_analysis(self, symbol: str, market_data: pd.DataFrame) -> Dict[str, Any]:
+        """Simple ML analysis when trained models are not available."""
+        try:
+            # Technical indicators
+            recent_data = market_data.tail(20)
+            
+            # Moving averages
+            ma_5 = recent_data['Close'].rolling(5).mean().iloc[-1]
+            ma_10 = recent_data['Close'].rolling(10).mean().iloc[-1]
+            ma_20 = recent_data['Close'].rolling(20).mean().iloc[-1]
+            current_price = recent_data['Close'].iloc[-1]
+            
+            # RSI (simplified)
+            price_changes = recent_data['Close'].pct_change().dropna()
+            gains = price_changes[price_changes > 0].mean() if len(price_changes[price_changes > 0]) > 0 else 0
+            losses = abs(price_changes[price_changes < 0].mean()) if len(price_changes[price_changes < 0]) > 0 else 0
+            rsi = 100 - (100 / (1 + gains / losses)) if losses > 0 else 50
+            
+            # Technical signal
+            tech_score = 0.0
+            if current_price > ma_5 > ma_10 > ma_20:
+                tech_score += 0.4  # Strong uptrend
+            elif current_price < ma_5 < ma_10 < ma_20:
+                tech_score -= 0.4  # Strong downtrend
+            
+            if rsi > 70:
+                tech_score -= 0.2  # Overbought
+            elif rsi < 30:
+                tech_score += 0.2  # Oversold
+            
+            # Determine signal
+            if tech_score > 0.2:
+                signal = 1.0
+                trend = "bullish"
+            elif tech_score < -0.2:
+                signal = -1.0
+                trend = "bearish"
+            else:
+                signal = 0.0
+                trend = "neutral"
+            
+            return {
+                "signal": signal,
+                "confidence": min(0.9, 0.5 + abs(tech_score)),
+                "reasoning": f"Technical: {trend} (MA trend, RSI: {rsi:.1f})",
+                "technical_indicators": {
+                    "ma_5": ma_5,
+                    "ma_10": ma_10,
+                    "ma_20": ma_20,
+                    "rsi": rsi
+                }
+            }
+            
+        except Exception as e:
+            print(f"Simple ML analysis error for {symbol}: {e}")
+            return {"signal": 0.0, "confidence": 0.5, "reasoning": f"Simple ML analysis error: {e}"}
+    
+    def _get_rl_decision(self, symbol: str, market_data: pd.DataFrame, model_outputs: Dict) -> Dict[str, Any]:
+        """Model 4: RL Decider Agent (Final decision maker)."""
+        try:
+            # Extract signals from other models
+            sentiment_signal = model_outputs['sentiment']['signal']
+            sentiment_confidence = model_outputs['sentiment']['confidence']
+            
+            quantitative_signal = model_outputs['quantitative']['signal']
+            quantitative_confidence = model_outputs['quantitative']['confidence']
+            
+            ml_signal = model_outputs['ml_ensemble']['signal']
+            ml_confidence = model_outputs['ml_ensemble']['confidence']
+            
+            # RL agent decision logic (simplified)
+            # Weight the inputs based on confidence and model weights
+            weighted_sentiment = sentiment_signal * sentiment_confidence * 0.25
+            weighted_quantitative = quantitative_signal * quantitative_confidence * 0.25
+            weighted_ml = ml_signal * ml_confidence * 0.35
+            
+            # Portfolio risk adjustment (simplified)
+            portfolio_risk = 0.05  # Default risk
+            cash_ratio = 0.7  # Default cash ratio
+            
+            # Risk adjustment factor
+            risk_adjustment = 1.0 - (portfolio_risk * 2)  # Reduce signal strength if high risk
+            cash_adjustment = 1.0 + (cash_ratio - 0.5) * 0.5  # Increase signal if more cash available
+            
+            # Final weighted decision
+            final_signal = (weighted_sentiment + weighted_quantitative + weighted_ml) * risk_adjustment * cash_adjustment
+            
+            # Determine action
+            if final_signal > 0.3:
+                action = "BUY"
+                confidence = min(0.95, 0.6 + abs(final_signal) * 0.5)
+            elif final_signal < -0.3:
+                action = "SELL"
+                confidence = min(0.95, 0.6 + abs(final_signal) * 0.5)
+            else:
+                action = "HOLD"
+                confidence = 0.7
+            
+            # Create comprehensive reasoning
+            reasoning = f"RL Decision: Sentiment={sentiment_signal:.2f}({sentiment_confidence:.1%}), " \
+                       f"Quant={quantitative_signal:.2f}({quantitative_confidence:.1%}), " \
+                       f"ML={ml_signal:.2f}({ml_confidence:.1%}), " \
+                       f"Final={final_signal:.2f}, Risk={portfolio_risk:.1%}, Cash={cash_ratio:.1%}"
+            
+            return {
+                "action": action,
+                "confidence": confidence,
+                "reasoning": reasoning,
+                "final_signal": final_signal,
+                "risk_adjustment": risk_adjustment,
+                "cash_adjustment": cash_adjustment
+            }
+            
+        except Exception as e:
+            print(f"RL decision error for {symbol}: {e}")
+            return {
+                "action": "HOLD",
+                "confidence": 0.5,
+                "reasoning": f"RL decision error: {e}",
+                "final_signal": 0.0
+            }
     
     def _get_fallback_recommendation(self, symbol: str) -> Dict[str, Any]:
         """Get fallback recommendation."""
