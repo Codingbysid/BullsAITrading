@@ -20,6 +20,21 @@ import logging
 import warnings
 warnings.filterwarnings('ignore')
 
+# Import unified utilities
+from ..utils.common_imports import setup_logger, PerformanceMetrics
+from ..utils.data_processing import data_processor
+from ..utils.feature_engineering import feature_engineer
+from ..utils.performance_metrics import performance_calculator
+from ..utils.risk_utils import risk_calculator
+from ..utils.config_manager import config_manager
+
+# Import models
+from ..models.sentiment_model import SentimentAnalysisModel
+from ..models.quantitative_model import QuantitativeRiskModel
+from ..models.ml_ensemble_model import MLEnsembleModel
+from ..models.rl_decider_agent import RLDeciderAgent
+
+# Legacy imports for compatibility
 from ..decision_engine.four_model_engine import FourModelDecisionEngine
 from ..data.data_sources import DataManager
 from ..data.feature_engineering import FeatureEngineer
@@ -31,17 +46,40 @@ class FourModelTrainingPipeline:
     """Training pipeline for four-model architecture"""
     
     def __init__(self):
+        # Initialize unified utilities
+        self.config = config_manager.get_model_config()
+        self.models_dir = Path("data/models")
+        self.models_dir.mkdir(exist_ok=True)
+        
+        # Initialize individual models
+        self.sentiment_model = SentimentAnalysisModel()
+        self.quantitative_model = QuantitativeRiskModel()
+        self.ml_ensemble_model = MLEnsembleModel()
+        self.rl_agent = RLDeciderAgent()
+        
+        # Legacy components for compatibility
         self.decision_engine = FourModelDecisionEngine()
         self.data_manager = DataManager()
         self.feature_engineer = FeatureEngineer()
         
-        # Training configuration
+        # Training configuration using unified config
         self.training_config = {
             'training_period_days': 800,
             'validation_period_days': 200,
             'rl_episodes': 100,
             'rl_simulation_days': 30,
-            'min_training_samples': 100
+            'min_training_samples': 100,
+            'lookback_period': self.config.lookback_period,
+            'validation_split': self.config.validation_split,
+            'test_split': self.config.test_split
+        }
+        
+        # Model weights for final decision
+        self.model_weights = {
+            'sentiment': 0.25,
+            'quantitative': 0.25,
+            'ml_ensemble': 0.35,
+            'rl_agent': 1.0  # Final decision maker
         }
         
         # Performance tracking
