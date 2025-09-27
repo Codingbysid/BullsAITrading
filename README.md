@@ -30,39 +30,44 @@ The platform is optimized for **5 core tickers**:
 - **GOOGL** - Alphabet (Communication Services)
 - **AAPL** - Apple (Technology)
 
-## 🧠 **AI Decision-Making Process**
+## 🧠 **Four-Model Decision Engine Architecture**
 
-### **Multi-Model Ensemble Architecture**
-The platform uses a sophisticated ensemble of AI models to make trading decisions:
+### **Revolutionary Four-Model Architecture**
+The platform now features a sophisticated four-model decision engine with a Reinforcement Learning agent as the final decision maker:
 
-#### **1. Technical Analysis Models**
-- **Random Forest**: Analyzes 50+ technical indicators (RSI, MACD, Bollinger Bands, etc.)
-- **XGBoost**: Gradient boosting for pattern recognition and trend prediction
-- **LSTM Neural Networks**: Deep learning for sequential pattern analysis
-- **Support Vector Machines**: Non-linear pattern classification
-
-#### **2. Sentiment Analysis Engine**
+#### **1. Sentiment Analysis Model (25% input weight)**
 - **News API Integration**: Real-time news sentiment analysis
 - **Gemini AI Processing**: Advanced NLP for market sentiment
 - **Social Media Monitoring**: Twitter, Reddit sentiment tracking
 - **Earnings Call Analysis**: NLP processing of corporate communications
+- **Multi-Source Aggregation**: Weighted combination of sentiment sources
+- **Confidence Scoring**: Data quality and consistency assessment
 
-#### **3. Fundamental Analysis Models**
-- **Financial Ratios**: P/E, P/B, ROE, Debt-to-Equity analysis
-- **Revenue Growth**: Historical and projected growth patterns
-- **Market Cap Analysis**: Company valuation and market position
-- **Sector Performance**: Relative strength within industry sectors
+#### **2. Quantitative Risk Model (25% input weight)**
+- **Risk-Adjusted Metrics**: Sharpe ratio, MAR ratio, Alpha, Beta analysis
+- **Advanced Risk Calculations**: Sortino ratio, Calmar ratio, Information ratio
+- **Volatility Analysis**: Historical and implied volatility assessment
+- **Drawdown Protection**: Maximum drawdown and VaR calculations
+- **Risk Signal Generation**: Composite risk-adjusted trading signals
 
-#### **4. Risk Management Integration**
-- **Kelly Criterion**: Optimal position sizing based on win probability
-- **Value at Risk (VaR)**: 95% and 99% confidence level risk assessment
-- **Maximum Drawdown**: Portfolio protection mechanisms
-- **Correlation Analysis**: Diversification and risk reduction
+#### **3. ML Ensemble Model (35% input weight)**
+- **Random Forest**: 40% of ensemble - Technical pattern analysis
+- **XGBoost**: 35% of ensemble - Gradient boosting for complex patterns
+- **LSTM Networks**: 25% of ensemble - Sequential pattern recognition
+- **Ensemble Voting**: Weighted consensus from all ML models
+- **Feature Engineering**: 50+ technical indicators and market features
 
-### **Decision-Making Workflow**
+#### **4. RL Decider Agent (Final decision maker)**
+- **Deep Q-Network (DQN)**: Neural network for decision optimization
+- **Risk-Adjusted Q-Values**: Explicit risk consideration in decisions
+- **Experience Replay**: Continuous learning from trading outcomes
+- **Epsilon-Greedy Exploration**: Balanced exploration vs exploitation
+- **Position Sizing**: Kelly Criterion with risk adjustments
+
+### **Four-Model Decision Workflow**
 
 ```
-📊 Data Collection → 🧠 Model Processing → ⚖️ Ensemble Voting → 🛡️ Risk Filter → 💡 Final Recommendation
+📊 Data Collection → 🧠 Four Models → ⚖️ RL Agent → 🛡️ Risk Filter → 💡 Final Decision
 ```
 
 #### **Step 1: Data Collection & Preprocessing**
@@ -71,30 +76,30 @@ The platform uses a sophisticated ensemble of AI models to make trading decision
 - **Fundamental Data**: Financial statements and ratios
 - **Historical Patterns**: 5+ years of historical data analysis
 
-#### **Step 2: Multi-Model Processing**
-- **Technical Models**: Generate buy/sell signals based on technical patterns
-- **Sentiment Models**: Assess market mood and news impact
-- **Fundamental Models**: Evaluate company financial health
-- **Risk Models**: Calculate position sizing and risk metrics
+#### **Step 2: Four-Model Processing**
+- **Sentiment Model**: Analyzes news, social media, and earnings sentiment
+- **Quantitative Model**: Calculates risk-adjusted metrics and signals
+- **ML Ensemble Model**: Combines Random Forest, XGBoost, and LSTM predictions
+- **Model Validation**: Ensures output quality and consistency
 
-#### **Step 3: Ensemble Voting System**
-- **Weighted Voting**: Each model contributes based on historical accuracy
-- **Confidence Scoring**: Models provide confidence levels (0-100%)
-- **Consensus Building**: Majority vote with confidence weighting
-- **Outlier Detection**: Flag and investigate conflicting signals
+#### **Step 3: RL Agent Decision Making**
+- **State Representation**: 19-dimensional state vector from all models
+- **Q-Value Calculation**: Deep Q-Network processes model inputs
+- **Risk Adjustment**: Explicit risk factors modify Q-values
+- **Action Selection**: Epsilon-greedy strategy for exploration/exploitation
 
-#### **Step 4: Risk Management Filter**
-- **Position Sizing**: Kelly Criterion optimal allocation
+#### **Step 4: Risk Management Integration**
+- **Position Sizing**: Kelly Criterion with risk adjustments
 - **Risk Limits**: Maximum 30% per ticker, 15% portfolio drawdown
-- **Correlation Check**: Ensure portfolio diversification
+- **Correlation Analysis**: Portfolio diversification checks
 - **Volatility Adjustment**: Dynamic risk based on market conditions
 
-#### **Step 5: Final Recommendation Generation**
-- **Action**: BUY, SELL, or HOLD
-- **Confidence**: 0-100% confidence score
-- **Position Size**: Recommended allocation percentage
+#### **Step 5: Final Decision Output**
+- **Action**: BUY, SELL, or HOLD with clear rationale
+- **Confidence**: 0-100% confidence score with supporting evidence
+- **Position Size**: Risk-adjusted allocation percentage
 - **Risk Metrics**: VaR, expected return, maximum loss
-- **Rationale**: Detailed explanation of decision factors
+- **Model Attribution**: Detailed breakdown of each model's contribution
 
 ### **Confidence Scoring System**
 
@@ -182,6 +187,11 @@ python run_quantai.py backtest
 # Run advanced backtester
 python run_quantai.py advanced
 
+# Four-Model System Commands
+python scripts/deploy_four_model_system.py    # Deploy four-model system
+python scripts/test_four_model_system.py      # Comprehensive testing
+python -m src.training.four_model_training    # Train all four models
+
 # Development commands
 make test          # Run all tests
 make lint          # Run linting
@@ -215,9 +225,17 @@ QuantAI-Trading-Platform/
 │   └── 📁 trading/                  # Trading applications
 ├── 📁 src/                          # Core source code
 │   ├── 📁 data/                     # Data processing
-│   ├── 📁 models/                   # ML models
-│   ├── 📁 risk/                     # Risk management
+│   ├── 📁 models/                   # Four-model architecture
+│   │   ├── base_models.py           # Base model interfaces
+│   │   ├── sentiment_model.py       # Sentiment analysis model
+│   │   ├── quantitative_model.py    # Quantitative risk model
+│   │   ├── ml_ensemble_model.py     # ML ensemble model
+│   │   └── rl_decider_agent.py      # RL decider agent
+│   ├── 📁 decision_engine/          # Decision engine
+│   │   └── four_model_engine.py     # Four-model decision engine
 │   ├── 📁 training/                 # Training pipelines
+│   │   └── four_model_training.py   # Four-model training pipeline
+│   ├── 📁 risk/                     # Risk management
 │   ├── 📁 database/                 # Database management
 │   ├── 📁 interface/                # User interfaces
 │   └── 📁 security/                 # Security & auth
@@ -227,6 +245,8 @@ QuantAI-Trading-Platform/
 │   ├── ARCHITECTURE.md              # System architecture
 │   └── CODING_STANDARDS.md          # Coding standards and best practices
 ├── 📁 scripts/                      # Utility scripts
+│   ├── deploy_four_model_system.py  # Four-model system deployment
+│   └── test_four_model_system.py    # Comprehensive testing framework
 ├── 📁 examples/                     # Example usage
 ├── 📄 requirements.txt              # Dependencies
 ├── 📄 run_quantai.py               # Main launcher

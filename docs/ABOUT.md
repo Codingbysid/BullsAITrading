@@ -41,14 +41,14 @@ The platform now features a comprehensive portfolio management system with:
 - **📚 Documentation**: Complete API documentation and coding standards
 - **🚀 CI/CD**: GitHub Actions with automated quality checks
 
-## 🧠 **AI Decision-Making Architecture**
+## 🧠 **Four-Model Decision Engine Architecture**
 
-### **Multi-Model Ensemble Decision Engine**
-The QuantAI platform employs a sophisticated multi-layered decision-making process that combines technical analysis, sentiment analysis, fundamental analysis, and machine learning to generate trading recommendations.
+### **Revolutionary Four-Model Architecture**
+The QuantAI platform now features a sophisticated four-model decision engine with a Reinforcement Learning agent as the final decision maker, providing unprecedented transparency and risk-aware decision making.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    AI Decision-Making Engine                    │
+│                Four-Model Decision Engine                       │
 ├─────────────────────────────────────────────────────────────────┤
 │  📊 Data Collection Layer                                      │
 │  ├── Real-time Market Data (Price, Volume, Technical Indicators)│
@@ -56,35 +56,47 @@ The QuantAI platform employs a sophisticated multi-layered decision-making proce
 │  ├── Fundamental Data (Financial Ratios, Earnings, Growth)     │
 │  └── Historical Patterns (5+ Years of Market Data)            │
 ├─────────────────────────────────────────────────────────────────┤
-│  🔍 Analysis Layer                                             │
-│  ├── Technical Analysis (RSI, MACD, Bollinger Bands, MA)      │
-│  ├── Sentiment Analysis (NLP, News Impact, Social Sentiment)  │
-│  ├── Fundamental Analysis (P/E, ROE, Revenue Growth, Valuation)│
-│  └── Risk Analysis (VaR, Correlation, Volatility, Drawdown)   │
+│  🧠 Four-Model Processing Layer                               │
+│  ├── Sentiment Analysis Model (25% input weight)              │
+│  │   ├── News API Integration                                 │
+│  │   ├── Gemini AI Processing                                 │
+│  │   ├── Social Media Monitoring                              │
+│  │   └── Multi-Source Aggregation                             │
+│  ├── Quantitative Risk Model (25% input weight)               │
+│  │   ├── Sharpe Ratio, MAR Ratio, Alpha, Beta                │
+│  │   ├── Sortino Ratio, Calmar Ratio, Information Ratio      │
+│  │   ├── Volatility Analysis                                  │
+│  │   └── Risk Signal Generation                               │
+│  ├── ML Ensemble Model (35% input weight)                     │
+│  │   ├── Random Forest (40% of ensemble)                     │
+│  │   ├── XGBoost (35% of ensemble)                           │
+│  │   ├── LSTM Networks (25% of ensemble)                     │
+│  │   └── Ensemble Voting                                      │
+│  └── Model Validation & Quality Assessment                    │
 ├─────────────────────────────────────────────────────────────────┤
-│  🧠 AI Model Layer                                            │
-│  ├── Random Forest (100 trees, feature importance ranking)    │
-│  ├── XGBoost (Gradient boosting with early stopping)          │
-│  ├── LSTM Networks (50 hidden units, 30-day lookback)        │
-│  ├── Support Vector Machines (Non-linear pattern classification)│
-│  └── Ensemble Voting (Weighted consensus from all models)     │
+│  🎯 RL Decider Agent (Final Decision Maker)                   │
+│  ├── Deep Q-Network (DQN) with 19-dimensional state          │
+│  ├── Risk-Adjusted Q-Values                                   │
+│  ├── Experience Replay Learning                               │
+│  ├── Epsilon-Greedy Exploration                              │
+│  └── Position Sizing with Kelly Criterion                    │
 ├─────────────────────────────────────────────────────────────────┤
-│  ⚖️ Decision Engine                                           │
-│  ├── Signal Generation (Buy/Sell/Hold with confidence scores) │
-│  ├── Position Sizing (Kelly Criterion optimal allocation)     │
-│  ├── Risk Filtering (VaR limits, correlation checks)          │
-│  └── Personalization (User risk profile, investment goals)    │
+│  🛡️ Risk Management Integration                               │
+│  ├── Position Sizing (Kelly Criterion with risk adjustments) │
+│  ├── Risk Limits (30% per ticker, 15% portfolio drawdown)    │
+│  ├── Correlation Analysis (Portfolio diversification)        │
+│  └── Volatility Adjustment (Dynamic risk management)         │
 ├─────────────────────────────────────────────────────────────────┤
-│  💡 Recommendation Output                                     │
+│  💡 Final Decision Output                                     │
 │  ├── Action (BUY/SELL/HOLD with clear rationale)             │
-│  ├── Confidence Score (0-100% with explanation)              │
-│  ├── Position Size (Recommended allocation percentage)        │
-│  ├── Risk Metrics (Expected return, max loss, risk-reward)   │
-│  └── Time Horizon (Short/Medium/Long-term outlook)           │
+│  ├── Confidence Score (0-100% with supporting evidence)      │
+│  ├── Position Size (Risk-adjusted allocation percentage)     │
+│  ├── Risk Metrics (VaR, expected return, maximum loss)       │
+│  └── Model Attribution (Detailed breakdown of contributions) │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### **Decision-Making Workflow**
+### **Four-Model Decision Workflow**
 
 #### **Step 1: Data Collection & Preprocessing**
 - **Real-time Market Data**: Live price feeds, volume data, technical indicators
@@ -93,31 +105,30 @@ The QuantAI platform employs a sophisticated multi-layered decision-making proce
 - **Historical Patterns**: 5+ years of historical data for pattern recognition
 - **Data Validation**: Quality checks, outlier detection, missing data handling
 
-#### **Step 2: Multi-Dimensional Analysis**
-- **Technical Analysis**: 50+ indicators including RSI, MACD, Bollinger Bands, Moving Averages
-- **Sentiment Analysis**: NLP processing of news, social media, earnings calls
-- **Fundamental Analysis**: Financial ratios, growth rates, market position analysis
-- **Risk Analysis**: Volatility, correlation, VaR calculations, drawdown analysis
+#### **Step 2: Four-Model Processing**
+- **Sentiment Model**: Analyzes news, social media, and earnings sentiment with multi-source aggregation
+- **Quantitative Model**: Calculates risk-adjusted metrics (Sharpe, MAR, Alpha, Beta) and generates risk signals
+- **ML Ensemble Model**: Combines Random Forest (40%), XGBoost (35%), and LSTM (25%) predictions
+- **Model Validation**: Ensures output quality, consistency, and agreement across models
 
-#### **Step 3: AI Model Processing**
-- **Random Forest**: 100 decision trees with feature importance ranking
-- **XGBoost**: Gradient boosting with early stopping and hyperparameter optimization
-- **LSTM Networks**: Deep learning for sequential pattern analysis (50 hidden units)
-- **Support Vector Machines**: Non-linear pattern classification and regression
-- **Ensemble Voting**: Weighted consensus based on historical model performance
+#### **Step 3: RL Agent Decision Making**
+- **State Representation**: 19-dimensional state vector combining all model outputs and market features
+- **Q-Value Calculation**: Deep Q-Network processes model inputs with risk-adjusted considerations
+- **Risk Adjustment**: Explicit risk factors modify Q-values based on Sharpe ratio, MAR ratio, and Alpha
+- **Action Selection**: Epsilon-greedy strategy balancing exploration and exploitation
 
-#### **Step 4: Decision Engine Processing**
-- **Signal Generation**: Buy/Sell/Hold signals with confidence scores
-- **Position Sizing**: Kelly Criterion for optimal allocation based on win probability
-- **Risk Filtering**: VaR limits, correlation checks, portfolio constraints
-- **Personalization**: User risk profile, investment goals, time horizon adaptation
+#### **Step 4: Risk Management Integration**
+- **Position Sizing**: Kelly Criterion with risk adjustments based on volatility and drawdown
+- **Risk Limits**: Maximum 30% per ticker, 15% portfolio drawdown, correlation checks
+- **Portfolio Constraints**: Diversification analysis and dynamic risk management
+- **Volatility Adjustment**: Real-time risk adjustments based on market conditions
 
-#### **Step 5: Recommendation Generation**
-- **Action**: Clear BUY/SELL/HOLD recommendation with detailed rationale
-- **Confidence Score**: 0-100% confidence level with supporting evidence
-- **Position Size**: Recommended allocation percentage (max 30% per ticker)
-- **Risk Metrics**: Expected return, maximum loss, risk-reward ratio
-- **Time Horizon**: Short-term (1-30 days), Medium-term (1-6 months), Long-term (6+ months)
+#### **Step 5: Final Decision Output**
+- **Action**: BUY, SELL, or HOLD with clear rationale and supporting evidence
+- **Confidence Score**: 0-100% confidence level with detailed explanation
+- **Position Size**: Risk-adjusted allocation percentage with Kelly Criterion optimization
+- **Risk Metrics**: VaR, expected return, maximum loss, risk-reward ratio
+- **Model Attribution**: Detailed breakdown of each model's contribution and weight
 
 ### **Confidence Scoring System**
 
