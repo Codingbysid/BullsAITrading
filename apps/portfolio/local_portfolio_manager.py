@@ -444,33 +444,50 @@ class LocalPortfolioManager:
             weighted_quantitative = quantitative_signal * quantitative_confidence * 0.25
             weighted_ml = ml_signal * ml_confidence * 0.35
             
-            # Portfolio risk adjustment
-            portfolio_risk = portfolio_state.get('portfolio_risk', 0.05)
+            # Enhanced risk factor analysis
+            portfolio_risk = portfolio_state.get('portfolio_risk', self.risk_tolerance)
             cash_ratio = portfolio_state.get('cash_ratio', 0.7)
             
-            # Risk adjustment factor
-            risk_adjustment = 1.0 - (portfolio_risk * 2)  # Reduce signal strength if high risk
+            # Calculate additional risk factors
+            risk_factors = self._calculate_risk_factors(symbol, market_data, portfolio_state)
+            
+            # Risk adjustment factors
+            risk_adjustment = self._calculate_risk_adjustment(portfolio_risk, risk_factors)
             cash_adjustment = 1.0 + (cash_ratio - 0.5) * 0.5  # Increase signal if more cash available
             
-            # Final weighted decision
-            final_signal = (weighted_sentiment + weighted_quantitative + weighted_ml) * risk_adjustment * cash_adjustment
+            # Volatility adjustment
+            volatility = risk_factors.get('volatility', 0.02)
+            volatility_adjustment = self._calculate_volatility_adjustment(volatility)
             
-            # Determine action
-            if final_signal > 0.3:
+            # Correlation adjustment
+            correlation_risk = risk_factors.get('correlation_risk', 0.0)
+            correlation_adjustment = 1.0 - (correlation_risk * 0.5)
+            
+            # Final weighted decision with all risk factors
+            base_signal = weighted_sentiment + weighted_quantitative + weighted_ml
+            final_signal = base_signal * risk_adjustment * cash_adjustment * volatility_adjustment * correlation_adjustment
+            
+            # Risk-based position sizing
+            position_size = self._calculate_position_size(final_signal, risk_factors)
+            
+            # Determine action with risk considerations
+            if final_signal > 0.3 and risk_factors.get('risk_score', 0) < 0.7:
                 action = "BUY"
                 confidence = min(0.95, 0.6 + abs(final_signal) * 0.5)
-            elif final_signal < -0.3:
+            elif final_signal < -0.3 and risk_factors.get('risk_score', 0) < 0.7:
                 action = "SELL"
                 confidence = min(0.95, 0.6 + abs(final_signal) * 0.5)
             else:
                 action = "HOLD"
                 confidence = 0.7
             
-            # Create comprehensive reasoning
+            # Create comprehensive reasoning with risk factors
             reasoning = f"RL Decision: Sentiment={sentiment_signal:.2f}({sentiment_confidence:.1%}), " \
                        f"Quant={quantitative_signal:.2f}({quantitative_confidence:.1%}), " \
                        f"ML={ml_signal:.2f}({ml_confidence:.1%}), " \
-                       f"Final={final_signal:.2f}, Risk={portfolio_risk:.1%}, Cash={cash_ratio:.1%}"
+                       f"Final={final_signal:.2f}, Risk={portfolio_risk:.1%}, " \
+                       f"Vol={volatility:.1%}, Corr={correlation_risk:.1%}, " \
+                       f"PosSize={position_size:.1%}"
             
             return {
                 "action": action,
@@ -478,7 +495,11 @@ class LocalPortfolioManager:
                 "reasoning": reasoning,
                 "final_signal": final_signal,
                 "risk_adjustment": risk_adjustment,
-                "cash_adjustment": cash_adjustment
+                "cash_adjustment": cash_adjustment,
+                "volatility_adjustment": volatility_adjustment,
+                "correlation_adjustment": correlation_adjustment,
+                "position_size": position_size,
+                "risk_factors": risk_factors
             }
             
         except Exception as e:
@@ -489,6 +510,116 @@ class LocalPortfolioManager:
                 "reasoning": f"RL decision error: {e}",
                 "final_signal": 0.0
             }
+    
+    def _calculate_risk_factors(self, symbol: str, market_data: pd.DataFrame, portfolio_state: Dict) -> Dict[str, float]:
+        """Calculate comprehensive risk factors."""
+        try:
+            # Basic risk metrics
+            returns = market_data['Close'].pct_change().dropna()
+            volatility = returns.std()
+            
+            # Maximum drawdown
+            cumulative = (1 + returns).cumprod()
+            running_max = cumulative.expanding().max()
+            drawdown = (cumulative - running_max) / running_max
+            max_drawdown = abs(drawdown.min())
+            
+            # VaR calculation (simplified)
+            var_95 = np.percentile(returns, 5) if len(returns) > 0 else -0.05
+            
+            # Correlation risk (simplified - would need other stocks for real correlation)
+            correlation_risk = 0.3  # Placeholder
+            
+            # Risk score (0-1, higher = more risky)
+            risk_score = min(1.0, (volatility * 10 + max_drawdown * 2 + abs(var_95) * 5) / 3)
+            
+            return {
+                "volatility": volatility,
+                "max_drawdown": max_drawdown,
+                "var_95": var_95,
+                "correlation_risk": correlation_risk,
+                "risk_score": risk_score,
+                "sharpe_ratio": returns.mean() / volatility if volatility > 0 else 0
+            }
+            
+        except Exception as e:
+            logger.error(f"Risk factor calculation error for {symbol}: {e}")
+            return {
+                "volatility": 0.02,
+                "max_drawdown": 0.1,
+                "var_95": -0.05,
+                "correlation_risk": 0.3,
+                "risk_score": 0.5,
+                "sharpe_ratio": 0.0
+            }
+    
+    def _calculate_risk_adjustment(self, portfolio_risk: float, risk_factors: Dict) -> float:
+        """Calculate risk adjustment factor."""
+        try:
+            # Base risk adjustment
+            base_adjustment = 1.0 - (portfolio_risk * 2)
+            
+            # Volatility adjustment
+            volatility = risk_factors.get('volatility', 0.02)
+            vol_adjustment = 1.0 - (volatility * 5)  # Reduce signal for high volatility
+            
+            # Drawdown adjustment
+            max_drawdown = risk_factors.get('max_drawdown', 0.1)
+            dd_adjustment = 1.0 - (max_drawdown * 2)  # Reduce signal for high drawdown
+            
+            # Combined risk adjustment
+            risk_adjustment = base_adjustment * vol_adjustment * dd_adjustment
+            
+            return max(0.1, min(1.0, risk_adjustment))  # Clamp between 0.1 and 1.0
+            
+        except Exception as e:
+            logger.error(f"Risk adjustment calculation error: {e}")
+            return 0.8
+    
+    def _calculate_volatility_adjustment(self, volatility: float) -> float:
+        """Calculate volatility adjustment factor."""
+        try:
+            # High volatility reduces signal strength
+            if volatility > 0.05:  # Very high volatility
+                return 0.5
+            elif volatility > 0.03:  # High volatility
+                return 0.7
+            elif volatility < 0.01:  # Very low volatility
+                return 1.2
+            else:  # Normal volatility
+                return 1.0
+                
+        except Exception as e:
+            logger.error(f"Volatility adjustment calculation error: {e}")
+            return 1.0
+    
+    def _calculate_position_size(self, signal: float, risk_factors: Dict) -> float:
+        """Calculate position size based on Kelly Criterion and risk factors."""
+        try:
+            # Kelly Criterion position sizing
+            win_rate = 0.6  # Assumed win rate
+            avg_win = 0.1   # Average win
+            avg_loss = 0.05 # Average loss
+            
+            kelly_fraction = (win_rate * avg_win - (1 - win_rate) * avg_loss) / avg_win
+            kelly_fraction = max(0, min(0.25, kelly_fraction))  # Cap at 25%
+            
+            # Adjust for risk factors
+            risk_score = risk_factors.get('risk_score', 0.5)
+            volatility = risk_factors.get('volatility', 0.02)
+            
+            # Reduce position size for high risk
+            risk_adjustment = 1.0 - (risk_score * 0.5)
+            vol_adjustment = 1.0 - (volatility * 10)
+            
+            # Final position size
+            position_size = kelly_fraction * risk_adjustment * vol_adjustment * abs(signal)
+            
+            return max(0.01, min(0.2, position_size))  # Clamp between 1% and 20%
+            
+        except Exception as e:
+            logger.error(f"Position size calculation error: {e}")
+            return 0.05  # Default 5% position size
     
     def _get_fallback_recommendation(self, symbol: str) -> Dict[str, Any]:
         """Get fallback recommendation when decision engine is not available."""

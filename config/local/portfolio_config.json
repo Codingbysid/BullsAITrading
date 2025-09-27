@@ -3,6 +3,15 @@
   "portfolio_id": "local_portfolio",
   "initial_capital": 100000.0,
   "risk_tolerance": 0.05,
+  "risk_factors": {
+    "portfolio_risk": 0.05,
+    "max_drawdown": 0.15,
+    "volatility_threshold": 0.03,
+    "correlation_limit": 0.7,
+    "var_confidence": 0.95,
+    "kelly_criterion": true,
+    "position_sizing": "kelly"
+  },
   "symbols": [
     "AAPL",
     "AMZN",
