@@ -168,7 +168,7 @@ def run_portfolio_manager():
     
     try:
         # Import and initialize the portfolio manager
-        from src.apps.portfolio.enhanced_portfolio_manager import EnhancedPortfolioManager
+        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         # Initialize with local configuration
         config_path = Path("config/local/portfolio_config.json")
@@ -180,7 +180,7 @@ def run_portfolio_manager():
             config = json.load(f)
         
         # Initialize portfolio manager
-        portfolio_manager = EnhancedPortfolioManager(
+        portfolio_manager = LocalPortfolioManager(
             user_id=config["user_id"],
             portfolio_id=config["portfolio_id"],
             initial_capital=config["initial_capital"],

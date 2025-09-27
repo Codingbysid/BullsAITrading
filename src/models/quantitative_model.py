@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 import logging
 
 from .base_models import BaseModel, ModelOutput
-from ..risk.risk_management import RiskManager, KellyCriterion
+from src.risk.risk_management import RiskManager, KellyCriterion
 
 logger = logging.getLogger(__name__)
 

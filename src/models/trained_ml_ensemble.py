@@ -19,8 +19,8 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from .base_models import BaseModel, ModelOutput
-from ..utils.common_imports import setup_logger
-from ..utils.feature_engineering import feature_engineer
+from src.utils.common_imports import setup_logger
+from src.utils.feature_engineering import feature_engineer
 
 logger = setup_logger(__name__)
 

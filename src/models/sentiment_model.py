@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 import logging
 
 from .base_models import BaseModel, ModelOutput
-from ..data.sentiment_analysis import SentimentAggregator, RealTimeSentimentMonitor
+from src.data.sentiment_analysis import SentimentAggregator, RealTimeSentimentMonitor
 
 logger = logging.getLogger(__name__)
 

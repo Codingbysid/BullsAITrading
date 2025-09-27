@@ -19,7 +19,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from .base_models import BaseModel, ModelOutput
-from ..models.trading_models import EnsembleTradingModel, RandomForestTradingModel, XGBoostTradingModel, LSTMTradingModel
+from src.models.trading_models import EnsembleTradingModel, RandomForestTradingModel, XGBoostTradingModel, LSTMTradingModel
 
 logger = logging.getLogger(__name__)
 
