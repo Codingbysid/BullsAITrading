@@ -36,12 +36,12 @@ def run_demo():
     print("   🔄 Regime Detection and Volatility Forecasting")
     print()
     
-    print("📊 BACKTESTING SYSTEMS:")
-    print("   🎯 Simple Backtester (Fast, no dependencies)")
-    print("   🎯 Standalone Backtester (Advanced)")
-    print("   🎯 QF-Lib Backtester (Event-driven) - Requires qf_env")
-    print("   🎯 Advanced Quantitative Backtester (Research-grade)")
-    print("   🎯 Focused 5-Ticker Backtester (Production-ready)")
+    print("📊 UNIFIED BACKTESTING SYSTEM:")
+    print("   🎯 Four-Model Backtester (Sentiment + Quantitative + ML + RL)")
+    print("   🎯 Advanced Technical Backtester (Multi-indicator analysis)")
+    print("   🎯 Momentum Backtester (Trend-following strategies)")
+    print("   🎯 Mean Reversion Backtester (Contrarian strategies)")
+    print("   🎯 Unified Framework (No code duplication, DRY principle)")
     print()
     
     print("🐍 QF-LIB ENVIRONMENT:")
@@ -91,49 +91,54 @@ def run_demo():
     print("   Production-ready architecture")
 
 def run_backtest():
-    """Run a simple backtest"""
-    print("📊 Running Simple Backtest...")
+    """Run unified backtesting system"""
+    print("📊 Running Unified Backtesting System...")
     try:
-        # Try to run the simple backtest
+        # Try to run the unified backtester
         import subprocess
         result = subprocess.run([
             sys.executable, 
-            "apps/backtesting/backtesters/simple_backtest.py"
-        ], capture_output=True, text=True, timeout=30)
+            "apps/backtesting/backtesters/unified_backtester.py"
+        ], capture_output=True, text=True, timeout=60)
         
         if result.returncode == 0:
-            print("✅ Backtest completed successfully!")
+            print("✅ Unified backtesting completed successfully!")
             print(result.stdout)
         else:
-            print("❌ Backtest failed:")
+            print("❌ Unified backtesting failed:")
             print(result.stderr)
     except Exception as e:
-        print(f"❌ Error running backtest: {e}")
+        print(f"❌ Error running unified backtest: {e}")
         print("🔄 This is expected if dependencies are not installed")
 
 def run_advanced_backtest():
-    """Run advanced quantitative backtester"""
-    print("🎯 QuantAI Trading Platform - Advanced Backtester")
+    """Run four-model backtesting system"""
+    print("🎯 QuantAI Trading Platform - Four-Model Backtester")
     print("=" * 60)
     print()
     
-    print("🚀 RUNNING ADVANCED BACKTESTER:")
-    print("   python apps/backtesting/backtesters/advanced_quantitative_backtester.py")
+    print("🚀 RUNNING FOUR-MODEL BACKTESTER:")
+    print("   Integrating Sentiment, Quantitative, ML Ensemble, and RL models")
     print()
     
-    # Try to run the advanced backtester
+    # Try to run the four-model backtester
     try:
         import subprocess
         result = subprocess.run([
-            'python', 'apps/backtesting/backtesters/advanced_quantitative_backtester.py'
-        ], check=True)
-        print("✅ Advanced backtester completed successfully!")
-    except subprocess.CalledProcessError:
-        print("❌ Advanced backtester failed")
-        print("Please check the backtester file")
-    except FileNotFoundError:
-        print("❌ Advanced backtester not found")
-        print("Please check the apps/backtesting/backtesters/advanced_quantitative_backtester.py file")
+            sys.executable, 'apps/backtesting/backtesters/unified_backtester.py'
+        ], capture_output=True, text=True, timeout=120)
+        
+        if result.returncode == 0:
+            print("✅ Four-model backtester completed successfully!")
+            print(result.stdout)
+        else:
+            print("❌ Four-model backtester failed:")
+            print(result.stderr)
+    except Exception as e:
+        print(f"❌ Error running four-model backtester: {e}")
+        print()
+        print("🔄 Alternative command:")
+        print("   python apps/backtesting/backtesters/unified_backtester.py")
 
 def main():
     """Main entry point"""
@@ -155,10 +160,10 @@ def main():
         print("  python run_quantai.py advanced # Run advanced backtester")
         print()
         print("Or run directly:")
-        print("  python apps/backtesting/backtesters/simple_backtest.py")
-        print("  python apps/backtesting/backtesters/standalone_backtest.py")
-        print("  python apps/backtesting/backtesters/advanced_quantitative_backtester.py")
-        print("  python apps/backtesting/backtesters/focused_5_ticker_backtester.py")
+        print("  python apps/backtesting/backtesters/unified_backtester.py")
+        print("  python apps/backtesting/base_backtester.py")
+        print("  python scripts/deploy_four_model_system.py")
+        print("  python scripts/test_four_model_system.py")
 
 if __name__ == "__main__":
     main()

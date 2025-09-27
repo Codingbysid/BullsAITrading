@@ -11,15 +11,17 @@ This package contains all backtesting systems:
 __version__ = "1.0.0"
 __author__ = "QuantAI Trading Platform"
 
-# Import all backtesters
-from .simple_backtest import SimpleBacktester
-from .standalone_backtest import StandaloneBacktester
-from .advanced_quantitative_backtester import AdvancedQuantitativeBacktester
-from .focused_5_ticker_backtester import Focused5TickerBacktester
+# Import unified backtesters
+from .unified_backtester import (
+    FourModelBacktester,
+    AdvancedTechnicalBacktester,
+    MomentumBacktester,
+    MeanReversionBacktester
+)
 
 __all__ = [
-    'SimpleBacktester',
-    'StandaloneBacktester', 
-    'AdvancedQuantitativeBacktester',
-    'Focused5TickerBacktester'
+    'FourModelBacktester',
+    'AdvancedTechnicalBacktester',
+    'MomentumBacktester',
+    'MeanReversionBacktester'
 ]
