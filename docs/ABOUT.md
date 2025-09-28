@@ -8,6 +8,8 @@ The **QuantAI Trading Platform** is an advanced AI-driven quantitative trading s
 
 **🛠️ UNIFIED ARCHITECTURE: DRY Principle Applied** - The platform now features a comprehensive unified utility architecture that eliminates code duplication across the entire codebase, providing single sources of truth for common functionality.
 
+**🧠 FOUR-MODEL DECISION ENGINE: Advanced Risk-Aware AI** - The platform now features a sophisticated four-model decision engine with comprehensive risk factor analysis, including volatility adjustments, VaR calculations, Kelly Criterion position sizing, and risk score thresholds for intelligent trading decisions.
+
 ## 🎯 Enhanced Portfolio Manager
 
 ### **NEW: Interactive Portfolio Management System**
@@ -24,6 +26,8 @@ The platform now features a comprehensive portfolio management system with:
 - **📚 Documentation**: Complete API documentation and coding standards
 - **🛠️ Unified Utilities**: Single source of truth for common functionality
 - **📏 DRY Architecture**: Zero code duplication across entire codebase
+- **🧠 Four-Model Decision Engine**: Sentiment (25%), Quantitative (25%), ML Ensemble (35%), RL Agent (Final)
+- **🎯 Risk-Aware AI**: Comprehensive risk factor analysis with volatility, VaR, and position sizing
 
 ### **Enhanced Platform Components:**
 - `apps/portfolio/enhanced_portfolio_manager.py` - Enhanced portfolio manager
@@ -118,10 +122,10 @@ The platform now features a comprehensive unified utility architecture that elim
 - **Comprehensive error handling** and logging consistency
 - **Optional dependency management** for maximum compatibility
 
-## 🧠 **Four-Model Decision Engine Architecture**
+## 🧠 **Four-Model Decision Engine with Risk Factors**
 
-### **Revolutionary Four-Model Architecture**
-The QuantAI platform now features a sophisticated four-model decision engine with a Reinforcement Learning agent as the final decision maker, providing unprecedented transparency and risk-aware decision making, built on the unified utility architecture.
+### **Revolutionary Four-Model Architecture with Comprehensive Risk Analysis**
+The QuantAI platform now features a sophisticated four-model decision engine with a Reinforcement Learning agent as the final decision maker, enhanced with comprehensive risk factor analysis including volatility adjustments, VaR calculations, Kelly Criterion position sizing, and risk score thresholds for intelligent trading decisions.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -194,18 +198,22 @@ The QuantAI platform now features a sophisticated four-model decision engine wit
 - **Risk Adjustment**: Explicit risk factors modify Q-values based on Sharpe ratio, MAR ratio, and Alpha
 - **Action Selection**: Epsilon-greedy strategy balancing exploration and exploitation
 
-#### **Step 4: Risk Management Integration**
-- **Position Sizing**: Kelly Criterion with risk adjustments based on volatility and drawdown
-- **Risk Limits**: Maximum 30% per ticker, 15% portfolio drawdown, correlation checks
-- **Portfolio Constraints**: Diversification analysis and dynamic risk management
-- **Volatility Adjustment**: Real-time risk adjustments based on market conditions
+#### **Step 4: Comprehensive Risk Management Integration**
+- **Position Sizing**: Kelly Criterion with risk adjustments based on volatility, drawdown, and correlation
+- **Risk Limits**: Maximum 30% per ticker, 15% portfolio drawdown, correlation checks, VaR limits
+- **Portfolio Constraints**: Diversification analysis, correlation risk assessment, and dynamic risk management
+- **Volatility Adjustment**: Real-time risk adjustments based on market conditions and volatility thresholds
+- **Risk Score Analysis**: Comprehensive risk scoring with volatility, drawdown, VaR, and correlation factors
+- **Risk-Adjusted Decisions**: High risk stocks get reduced signals, risk score thresholds for BUY/SELL/HOLD
 
-#### **Step 5: Final Decision Output**
+#### **Step 5: Enhanced Final Decision Output with Risk Analysis**
 - **Action**: BUY, SELL, or HOLD with clear rationale and supporting evidence
 - **Confidence Score**: 0-100% confidence level with detailed explanation
 - **Position Size**: Risk-adjusted allocation percentage with Kelly Criterion optimization
-- **Risk Metrics**: VaR, expected return, maximum loss, risk-reward ratio
+- **Risk Metrics**: VaR, expected return, maximum loss, risk-reward ratio, volatility, drawdown
 - **Model Attribution**: Detailed breakdown of each model's contribution and weight
+- **Risk Factor Analysis**: Comprehensive risk assessment including volatility, correlation, and risk score
+- **Risk Adjustments**: Detailed breakdown of risk adjustments applied to final decision
 
 ### **Confidence Scoring System**
 
@@ -1606,14 +1614,14 @@ make docs          # Generate documentation
 ## 📈 Future Enhancements
 
 ### Planned Features
-1. **Real-time Trading**: Live trading integration
-2. **Deep Learning Models**: LSTM, Transformer architectures
-3. **Alternative Data**: Satellite data, social media sentiment
-4. **Multi-asset Support**: Bonds, commodities, crypto
-5. **Cloud Deployment**: AWS, GCP, Azure
-6. **High-Frequency Trading**: Microsecond execution
-7. **Machine Learning Pipeline**: Automated model selection
-8. **Risk Management**: Dynamic hedging strategies
+1. **Real-time Trading**: Live trading integration with risk factor monitoring
+2. **Deep Learning Models**: LSTM, Transformer architectures with risk-aware training
+3. **Alternative Data**: Satellite data, social media sentiment with risk correlation
+4. **Multi-asset Support**: Bonds, commodities, crypto with cross-asset risk analysis
+5. **Cloud Deployment**: AWS, GCP, Azure with risk factor scaling
+6. **High-Frequency Trading**: Microsecond execution with real-time risk monitoring
+7. **Machine Learning Pipeline**: Automated model selection with risk factor optimization
+8. **Advanced Risk Management**: Dynamic hedging strategies with four-model risk assessment
 
 ### Technical Improvements
 1. **Microservices**: Service-oriented architecture

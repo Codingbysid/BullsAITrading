@@ -1,6 +1,6 @@
 # 🚀 QuantAI Trading Platform
 
-**Advanced AI-driven quantitative trading platform** with comprehensive risk management, real-time monitoring, institutional-grade backtesting capabilities, and interactive portfolio management. **Now featuring a focused 5-ticker strategy for AMZN, META, NVDA, GOOGL, and AAPL with enhanced portfolio management and reinforcement learning.**
+**Advanced AI-driven quantitative trading platform** with comprehensive risk management, real-time monitoring, institutional-grade backtesting capabilities, and interactive portfolio management. **Now featuring a focused 5-ticker strategy for AMZN, META, NVDA, GOOGL, and AAPL with four-model decision engine and comprehensive risk factor analysis.**
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -10,13 +10,13 @@
 
 QuantAI Trading Platform is a comprehensive, institutional-grade quantitative trading system that combines:
 
-- **🤖 Advanced AI/ML Models**: Random Forest, XGBoost, LSTM, Reinforcement Learning, Ensemble Learning
+- **🧠 Four-Model Decision Engine**: Sentiment Analysis (25%), Quantitative Risk (25%), ML Ensemble (35%), RL Decider Agent (Final)
 - **📈 Real-Time Market Data**: Multiple data sources with fallback mechanisms
-- **🛡️ Risk Management**: Kelly Criterion, VaR, Max Drawdown, Portfolio Optimization
-- **📊 Backtesting Systems**: 5 different backtesting approaches for comprehensive validation
-- **💼 Portfolio Management**: Interactive portfolio tracking with AI recommendations
-- **🔄 Reinforcement Learning**: Continuous improvement through user feedback
-- **🌐 Web Interface**: FastAPI backend with Streamlit dashboard
+- **🛡️ Comprehensive Risk Management**: Kelly Criterion, VaR, Max Drawdown, Volatility Analysis, Correlation Risk
+- **📊 Advanced Backtesting**: Scientific validation with purged cross-validation and walk-forward analysis
+- **💼 Interactive Portfolio Management**: AI-powered recommendations with risk factor analysis
+- **🔄 Reinforcement Learning**: Continuous improvement through user feedback and market adaptation
+- **🎯 Risk-Aware Decisions**: Volatility adjustments, position sizing, and risk score thresholds
 
 ## 🎯 **Focused 5-Ticker Strategy**
 
@@ -46,20 +46,23 @@ python run_quantai.py demo
 ### **Quick Commands**
 
 ```bash
-# Demo mode (shows all capabilities)
-python run_quantai.py demo
+# Set up local environment
+python run_portfolio.py --setup
 
-# Run backtesting
-python run_quantai.py backtest
+# Run four-model recommendations with risk factors
+python run_with_risk_factors.py
 
-# CLI interface
-python run_quantai.py cli
+# Run portfolio manager with AI recommendations
+python run_portfolio.py --run
 
-# API server
-python run_quantai.py api
+# Adjust risk factors interactively
+python adjust_risk_factors.py
 
-# Check status
-python run_quantai.py status
+# Test four-model decision engine
+python test_four_model_approach.py
+
+# Run simple recommendations
+python run_four_model_recommendations.py
 ```
 
 ## 📁 **Project Structure**
@@ -111,13 +114,16 @@ QuantAI-Trading-Platform/
 - **Historical Data**: Kaggle datasets for ML training
 - **Backup Sources**: YFinance for redundancy
 
-### **🛡️ Risk Management**
-- **Kelly Criterion**: Optimal position sizing
-- **Value at Risk (VaR)**: 95% and 99% confidence levels
-- **Maximum Drawdown**: Portfolio protection
-- **Sharpe Ratio Optimization**: Risk-adjusted returns
-- **Portfolio Optimization**: Mean-variance optimization
-- **Risk Budgeting**: Dynamic allocation
+### **🛡️ Comprehensive Risk Management**
+- **Four-Model Risk Analysis**: Sentiment, Quantitative, ML Ensemble, RL Agent
+- **Kelly Criterion Position Sizing**: Risk-adjusted position sizing
+- **Value at Risk (VaR)**: 95% and 99% confidence levels with real-time calculation
+- **Maximum Drawdown Protection**: Historical and real-time drawdown analysis
+- **Volatility Analysis**: High volatility reduces signal strength
+- **Correlation Risk Assessment**: Portfolio correlation analysis
+- **Risk Score Thresholds**: Risk-based BUY/SELL/HOLD decisions
+- **Sharpe Ratio Optimization**: Risk-adjusted returns with dynamic adjustment
+- **Portfolio Risk Budgeting**: Dynamic allocation based on risk factors
 
 ### **📈 Backtesting Systems**
 
@@ -219,16 +225,22 @@ python test_prd_data.py
 python scripts/setup_market_data.py
 ```
 
-### **Portfolio Management**
+### **Four-Model Decision Engine with Risk Factors**
 ```bash
-# CLI interface
-python run_quantai.py cli
+# Set up local environment
+python run_portfolio.py --setup
 
-# Web API
-python run_quantai.py api
+# Run enhanced risk analysis
+python run_with_risk_factors.py
 
-# Demo mode
-python run_quantai.py demo
+# Run portfolio manager with AI recommendations
+python run_portfolio.py --run
+
+# Adjust risk factors interactively
+python adjust_risk_factors.py
+
+# Test four-model decision engine
+python test_four_model_approach.py
 ```
 
 ## 📊 **Performance Metrics**
