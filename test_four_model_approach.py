@@ -1,3 +1,10 @@
+from src.utils.common_imports import *
+import sys
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, List
+        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
+
 #!/usr/bin/env python3
 """
 Test Four-Model Approach for Stock Recommendations
@@ -6,12 +13,6 @@ This script tests the complete four-model decision engine to ensure each stock
 gets a unique recommendation based on all four models working together.
 """
 
-import sys
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / 'src'))
@@ -25,7 +26,6 @@ def test_four_model_approach():
     print("=" * 60)
     
     try:
-        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         # Initialize portfolio manager
         portfolio_manager = LocalPortfolioManager()
@@ -98,7 +98,6 @@ def test_individual_models():
     print("=" * 40)
     
     try:
-        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         portfolio_manager = LocalPortfolioManager()
         symbols = ["AAPL", "AMZN", "GOOGL", "META", "NVDA"]
@@ -161,7 +160,6 @@ def test_model_differences():
     print("=" * 60)
     
     try:
-        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         portfolio_manager = LocalPortfolioManager()
         symbols = ["AAPL", "AMZN", "GOOGL", "META", "NVDA"]

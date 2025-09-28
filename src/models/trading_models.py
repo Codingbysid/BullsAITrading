@@ -1,15 +1,4 @@
-"""
-Trading models module implementing ensemble ML approaches.
-
-This module provides various ML models for trading predictions including:
-- Random Forest for classification and regression
-- XGBoost for gradient boosting
-- LSTM for time series prediction
-- Ensemble methods for combining predictions
-"""
-
-import numpy as np
-import pandas as pd
+from src.utils.common_imports import *
 from typing import Dict, List, Optional, Tuple, Union
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import TimeSeriesSplit, cross_val_score
@@ -20,10 +9,22 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 import logging
-
 from ..config.settings import get_settings
+        from sklearn.preprocessing import StandardScaler
 
-logger = logging.getLogger(__name__)
+"""
+Trading models module implementing ensemble ML approaches.
+
+This module provides various ML models for trading predictions including:
+- Random Forest for classification and regression
+- XGBoost for gradient boosting
+- LSTM for time series prediction
+- Ensemble methods for combining predictions
+"""
+
+
+
+logger = setup_logger()
 
 
 class BaseTradingModel:
@@ -249,7 +250,6 @@ class LSTMTradingModel(BaseTradingModel):
     
     def fit(self, X: pd.DataFrame, y: pd.Series) -> None:
         """Fit LSTM model."""
-        from sklearn.preprocessing import StandardScaler
         
         # Remove NaN values
         mask = ~(X.isna().any(axis=1) | y.isna())

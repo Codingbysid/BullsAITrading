@@ -1,3 +1,24 @@
+from src.utils.common_imports import *
+from ..utils.common_imports import setup_logger, PerformanceMetrics
+from typing import Dict, List, Any, Optional, Tuple
+import asyncio
+from datetime import datetime, timedelta
+import logging
+import warnings
+from ..utils.data_processing import data_processor
+from ..utils.feature_engineering import feature_engineer
+from ..utils.performance_metrics import performance_calculator
+from ..utils.risk_utils import risk_calculator
+from ..utils.config_manager import config_manager
+from ..models.sentiment_model import SentimentAnalysisModel
+from ..models.quantitative_model import QuantitativeRiskModel
+from ..models.ml_ensemble_model import MLEnsembleModel
+from ..models.rl_decider_agent import RLDeciderAgent
+from ..decision_engine.four_model_engine import FourModelDecisionEngine
+from ..data.data_sources import DataManager
+from ..data.feature_engineering import FeatureEngineer
+            import json
+
 #!/usr/bin/env python3
 """
 Training Pipeline for the four-model decision engine.
@@ -11,35 +32,15 @@ This pipeline trains all four models:
 Provides comprehensive training with validation and performance tracking.
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-import asyncio
-from datetime import datetime, timedelta
-import logging
-import warnings
 warnings.filterwarnings('ignore')
 
 # Import unified utilities
-from ..utils.common_imports import setup_logger, PerformanceMetrics
-from ..utils.data_processing import data_processor
-from ..utils.feature_engineering import feature_engineer
-from ..utils.performance_metrics import performance_calculator
-from ..utils.risk_utils import risk_calculator
-from ..utils.config_manager import config_manager
 
 # Import models
-from ..models.sentiment_model import SentimentAnalysisModel
-from ..models.quantitative_model import QuantitativeRiskModel
-from ..models.ml_ensemble_model import MLEnsembleModel
-from ..models.rl_decider_agent import RLDeciderAgent
 
 # Legacy imports for compatibility
-from ..decision_engine.four_model_engine import FourModelDecisionEngine
-from ..data.data_sources import DataManager
-from ..data.feature_engineering import FeatureEngineer
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class FourModelTrainingPipeline:
@@ -496,7 +497,6 @@ class FourModelTrainingPipeline:
     def save_training_results(self, filepath: str):
         """Save training results to file"""
         try:
-            import json
             
             # Convert datetime objects to strings for JSON serialization
             def convert_datetime(obj):

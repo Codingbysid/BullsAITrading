@@ -1,3 +1,13 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Tuple
+from datetime import datetime, timedelta
+import json
+import logging
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score, precision_score, recall_score
+    import joblib
+
 """
 Reinforcement Learning Feedback System for QuantAI Trading Bot.
 
@@ -5,19 +15,9 @@ This module implements a feedback learning system that improves
 recommendation accuracy based on user acceptance and outcomes.
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Tuple
-from datetime import datetime, timedelta
-import json
-import logging
 
 # Try to import scikit-learn, fallback if not available
 try:
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import accuracy_score, precision_score, recall_score
-    import joblib
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
@@ -31,7 +31,7 @@ class ReinforcementFeedbackTrainer:
         self.model_path = model_path
         self.model = None
         self.feature_columns = []
-        self.logger = logging.getLogger(__name__)
+        self.logger = setup_logger()
         
         # Initialize or load existing model
         self.load_or_create_model()

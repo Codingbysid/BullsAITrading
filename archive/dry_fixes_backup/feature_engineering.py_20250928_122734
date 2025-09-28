@@ -1,0 +1,400 @@
+"""
+Feature engineering module for creating technical and fundamental indicators.
+
+This module implements comprehensive feature engineering for ML models including:
+- Technical indicators (RSI, MACD, Bollinger Bands, etc.)
+- Statistical features (rolling means, volatility, correlation)
+- Fundamental ratios (P/E, P/B, ROE, etc.)
+- Sentiment features (news, social media)
+"""
+
+import pandas as pd
+import numpy as np
+import ta
+from typing import Dict, List, Optional, Tuple
+from scipy import stats
+from sklearn.preprocessing import StandardScaler
+import logging
+from .finviz_simple import simple_finviz
+
+logger = logging.getLogger(__name__)
+
+
+class FeatureEngineer:
+    """Feature engineering for trading models."""
+    
+    def __init__(self, lookback_period: int = 252):
+        self.lookback_period = lookback_period
+        self.scaler = StandardScaler()
+    
+    def create_technical_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create technical indicators for the given DataFrame.
+        
+        Args:
+            df: DataFrame with OHLCV data
+            
+        Returns:
+            DataFrame with technical indicators
+        """
+        if df.empty:
+            return df
+        
+        # Ensure we have the required columns
+        required_cols = ['open', 'high', 'low', 'close', 'volume']
+        if not all(col in df.columns for col in required_cols):
+            logger.error("Missing required OHLCV columns")
+            return df
+        
+        # Create a copy to avoid modifying original
+        data = df.copy()
+        
+        # Price-based indicators
+        data['sma_5'] = ta.trend.sma_indicator(data['close'], window=5)
+        data['sma_10'] = ta.trend.sma_indicator(data['close'], window=10)
+        data['sma_20'] = ta.trend.sma_indicator(data['close'], window=20)
+        data['sma_50'] = ta.trend.sma_indicator(data['close'], window=50)
+        data['sma_200'] = ta.trend.sma_indicator(data['close'], window=200)
+        
+        # Exponential moving averages
+        data['ema_12'] = ta.trend.ema_indicator(data['close'], window=12)
+        data['ema_26'] = ta.trend.ema_indicator(data['close'], window=26)
+        
+        # RSI (Relative Strength Index)
+        data['rsi_14'] = ta.momentum.rsi(data['close'], window=14)
+        data['rsi_21'] = ta.momentum.rsi(data['close'], window=21)
+        
+        # MACD
+        data['macd'] = ta.trend.macd(data['close'])
+        data['macd_signal'] = ta.trend.macd_signal(data['close'])
+        data['macd_histogram'] = ta.trend.macd_diff(data['close'])
+        
+        # Bollinger Bands
+        data['bb_upper'] = ta.volatility.bollinger_hband(data['close'])
+        data['bb_middle'] = ta.volatility.bollinger_mavg(data['close'])
+        data['bb_lower'] = ta.volatility.bollinger_lband(data['close'])
+        data['bb_width'] = (data['bb_upper'] - data['bb_lower']) / data['bb_middle']
+        data['bb_position'] = (data['close'] - data['bb_lower']) / (data['bb_upper'] - data['bb_lower'])
+        
+        # Stochastic Oscillator
+        data['stoch_k'] = ta.momentum.stoch(data['high'], data['low'], data['close'])
+        data['stoch_d'] = ta.momentum.stoch_signal(data['high'], data['low'], data['close'])
+        
+        # Williams %R
+        data['williams_r'] = ta.momentum.williams_r(data['high'], data['low'], data['close'])
+        
+        # Average True Range (ATR)
+        data['atr_14'] = ta.volatility.average_true_range(data['high'], data['low'], data['close'])
+        
+        # Commodity Channel Index (CCI)
+        data['cci_20'] = ta.trend.cci(data['high'], data['low'], data['close'])
+        
+        # Volume indicators
+        data['volume_sma_20'] = ta.volume.volume_sma(data['close'], data['volume'])
+        data['volume_ratio'] = data['volume'] / data['volume_sma_20']
+        
+        # On Balance Volume (OBV)
+        data['obv'] = ta.volume.on_balance_volume(data['close'], data['volume'])
+        
+        # Price momentum
+        data['momentum_1'] = data['close'].pct_change(1)
+        data['momentum_5'] = data['close'].pct_change(5)
+        data['momentum_10'] = data['close'].pct_change(10)
+        data['momentum_20'] = data['close'].pct_change(20)
+        
+        # Volatility indicators
+        data['volatility_5'] = data['close'].rolling(5).std()
+        data['volatility_10'] = data['close'].rolling(10).std()
+        data['volatility_20'] = data['close'].rolling(20).std()
+        
+        return data
+    
+    def create_statistical_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create statistical features.
+        
+        Args:
+            df: DataFrame with price data
+            
+        Returns:
+            DataFrame with statistical features
+        """
+        if df.empty:
+            return df
+        
+        data = df.copy()
+        
+        # Rolling statistics
+        for window in [5, 10, 20, 50]:
+            data[f'mean_{window}'] = data['close'].rolling(window).mean()
+            data[f'std_{window}'] = data['close'].rolling(window).std()
+            data[f'min_{window}'] = data['close'].rolling(window).min()
+            data[f'max_{window}'] = data['close'].rolling(window).max()
+            data[f'median_{window}'] = data['close'].rolling(window).median()
+            
+            # Skewness and Kurtosis
+            data[f'skew_{window}'] = data['close'].rolling(window).skew()
+            data[f'kurt_{window}'] = data['close'].rolling(window).kurt()
+        
+        # Price position within range
+        for window in [20, 50]:
+            data[f'price_position_{window}'] = (
+                (data['close'] - data[f'min_{window}']) / 
+                (data[f'max_{window}'] - data[f'min_{window}'])
+            )
+        
+        # Z-scores
+        for window in [20, 50]:
+            data[f'zscore_{window}'] = (
+                (data['close'] - data[f'mean_{window}']) / data[f'std_{window}']
+            )
+        
+        # Autocorrelation
+        for lag in [1, 5, 10]:
+            data[f'autocorr_{lag}'] = data['close'].rolling(20).apply(
+                lambda x: x.autocorr(lag=lag) if len(x) > lag else np.nan
+            )
+        
+        return data
+    
+    def create_fundamental_features(self, df: pd.DataFrame, symbol: str = None) -> pd.DataFrame:
+        """
+        Create fundamental analysis features using FinViz data.
+        
+        Args:
+            df: DataFrame with price data
+            symbol: Stock symbol for fetching fundamentals
+            
+        Returns:
+            DataFrame with fundamental features
+        """
+        if df.empty:
+            return df
+        
+        data = df.copy()
+        
+        # Get fundamental data from FinViz if symbol is provided
+        if symbol:
+            try:
+                fundamentals = simple_finviz.get_stock_fundamentals(symbol)
+                
+                # Price-to-Earnings ratio
+                data['pe_ratio'] = fundamentals.get('pe_ratio', np.nan)
+                
+                # Price-to-Book ratio
+                data['pb_ratio'] = fundamentals.get('pb_ratio', np.nan)
+                
+                # Return on Equity
+                data['roe'] = fundamentals.get('roe', np.nan)
+                
+                # Debt-to-Equity ratio
+                data['debt_to_equity'] = fundamentals.get('debt_to_equity', np.nan)
+                
+                # Revenue growth
+                data['revenue_growth'] = fundamentals.get('revenue_growth', np.nan)
+                
+                # Earnings growth
+                data['earnings_growth'] = fundamentals.get('earnings_growth', np.nan)
+                
+                # Additional fundamental metrics
+                data['market_cap'] = fundamentals.get('market_cap', np.nan)
+                data['beta'] = fundamentals.get('beta', np.nan)
+                data['current_ratio'] = fundamentals.get('current_ratio', np.nan)
+                data['quick_ratio'] = fundamentals.get('quick_ratio', np.nan)
+                data['gross_margin'] = fundamentals.get('gross_margin', np.nan)
+                data['operating_margin'] = fundamentals.get('operating_margin', np.nan)
+                data['profit_margin'] = fundamentals.get('profit_margin', np.nan)
+                
+                logger.info(f"Added fundamental features for {symbol}")
+                
+            except Exception as e:
+                logger.error(f"Error fetching fundamentals for {symbol}: {e}")
+                # Fill with NaN if error occurs
+                fundamental_cols = [
+                    'pe_ratio', 'pb_ratio', 'roe', 'debt_to_equity',
+                    'revenue_growth', 'earnings_growth', 'market_cap',
+                    'beta', 'current_ratio', 'quick_ratio',
+                    'gross_margin', 'operating_margin', 'profit_margin'
+                ]
+                for col in fundamental_cols:
+                    data[col] = np.nan
+        else:
+            # Fill with NaN if no symbol provided
+            fundamental_cols = [
+                'pe_ratio', 'pb_ratio', 'roe', 'debt_to_equity',
+                'revenue_growth', 'earnings_growth', 'market_cap',
+                'beta', 'current_ratio', 'quick_ratio',
+                'gross_margin', 'operating_margin', 'profit_margin'
+            ]
+            for col in fundamental_cols:
+                data[col] = np.nan
+        
+        return data
+    
+    def create_sentiment_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Create sentiment analysis features.
+        Note: This is a placeholder - in production, you'd integrate with
+        news APIs and sentiment analysis services.
+        
+        Args:
+            df: DataFrame with price data
+            
+        Returns:
+            DataFrame with sentiment features
+        """
+        if df.empty:
+            return df
+        
+        data = df.copy()
+        
+        # News sentiment (placeholder)
+        data['news_sentiment'] = 0.0  # Would be calculated from news analysis
+        
+        # Social media sentiment (placeholder)
+        data['social_sentiment'] = 0.0  # Would be calculated from social media
+        
+        # Analyst sentiment (placeholder)
+        data['analyst_sentiment'] = 0.0  # Would be calculated from analyst reports
+        
+        # Overall sentiment score
+        data['overall_sentiment'] = (
+            data['news_sentiment'] + 
+            data['social_sentiment'] + 
+            data['analyst_sentiment']
+        ) / 3
+        
+        return data
+    
+    def create_target_variables(self, df: pd.DataFrame, horizon: int = 1) -> pd.DataFrame:
+        """
+        Create target variables for ML models.
+        
+        Args:
+            df: DataFrame with price data
+            horizon: Prediction horizon in days
+            
+        Returns:
+            DataFrame with target variables
+        """
+        if df.empty:
+            return df
+        
+        data = df.copy()
+        
+        # Future returns
+        data['future_return'] = data['close'].shift(-horizon) / data['close'] - 1
+        
+        # Future price direction (classification target)
+        data['future_direction'] = (data['future_return'] > 0).astype(int)
+        
+        # Future volatility
+        data['future_volatility'] = data['close'].rolling(horizon).std().shift(-horizon)
+        
+        # Future Sharpe ratio (simplified)
+        data['future_sharpe'] = data['future_return'] / data['future_volatility']
+        
+        return data
+    
+    def create_all_features(self, df: pd.DataFrame, symbol: str = None) -> pd.DataFrame:
+        """
+        Create all features for the dataset.
+        
+        Args:
+            df: DataFrame with OHLCV data
+            symbol: Stock symbol for fetching fundamentals
+            
+        Returns:
+            DataFrame with all engineered features
+        """
+        if df.empty:
+            return df
+        
+        logger.info("Creating technical indicators...")
+        data = self.create_technical_indicators(df)
+        
+        logger.info("Creating statistical features...")
+        data = self.create_statistical_features(data)
+        
+        logger.info("Creating fundamental features...")
+        data = self.create_fundamental_features(data, symbol)
+        
+        logger.info("Creating sentiment features...")
+        data = self.create_sentiment_features(data)
+        
+        logger.info("Creating target variables...")
+        data = self.create_target_variables(data)
+        
+        # Remove rows with NaN values
+        initial_rows = len(data)
+        data = data.dropna()
+        final_rows = len(data)
+        
+        logger.info(f"Removed {initial_rows - final_rows} rows with NaN values")
+        
+        return data
+    
+    def scale_features(self, df: pd.DataFrame, feature_columns: List[str]) -> pd.DataFrame:
+        """
+        Scale features using StandardScaler.
+        
+        Args:
+            df: DataFrame with features
+            feature_columns: List of column names to scale
+            
+        Returns:
+            DataFrame with scaled features
+        """
+        if df.empty:
+            return df
+        
+        data = df.copy()
+        
+        # Scale the specified features
+        for col in feature_columns:
+            if col in data.columns:
+                data[f'{col}_scaled'] = self.scaler.fit_transform(data[[col]])
+        
+        return data
+    
+    def get_feature_importance(self, model, feature_names: List[str]) -> pd.DataFrame:
+        """
+        Get feature importance from trained model.
+        
+        Args:
+            model: Trained ML model
+            feature_names: List of feature names
+            
+        Returns:
+            DataFrame with feature importance
+        """
+        if hasattr(model, 'feature_importances_'):
+            importance = model.feature_importances_
+        elif hasattr(model, 'coef_'):
+            importance = np.abs(model.coef_[0])
+        else:
+            logger.warning("Model does not have feature importance attribute")
+            return pd.DataFrame()
+        
+        feature_importance = pd.DataFrame({
+            'feature': feature_names,
+            'importance': importance
+        }).sort_values('importance', ascending=False)
+        
+        return feature_importance
+
+
+def create_features(df: pd.DataFrame, symbol: str = None, lookback_period: int = 252) -> pd.DataFrame:
+    """
+    Convenience function to create all features.
+    
+    Args:
+        df: DataFrame with OHLCV data
+        symbol: Stock symbol for fetching fundamentals
+        lookback_period: Lookback period for calculations
+        
+    Returns:
+        DataFrame with all engineered features
+    """
+    engineer = FeatureEngineer(lookback_period)
+    return engineer.create_all_features(df, symbol)

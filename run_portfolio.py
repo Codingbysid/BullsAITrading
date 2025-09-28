@@ -1,3 +1,12 @@
+from src.utils.common_imports import *
+import sys
+import os
+import argparse
+import json
+from pathlib import Path
+from datetime import datetime
+        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
+
 #!/usr/bin/env python3
 """
 QuantAI Portfolio Manager - Local Environment Setup
@@ -11,14 +20,6 @@ Usage:
     python run_portfolio.py --demo     # Run demo mode
 """
 
-import sys
-import os
-import argparse
-import json
-from pathlib import Path
-from datetime import datetime
-import pandas as pd
-import numpy as np
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent))
@@ -168,7 +169,6 @@ def run_portfolio_manager():
     
     try:
         # Import and initialize the portfolio manager
-        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         # Initialize with local configuration
         config_path = Path("config/local/portfolio_config.json")

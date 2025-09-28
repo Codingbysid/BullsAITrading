@@ -1,3 +1,24 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Optional, Tuple, Any, Union
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+import warnings
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit
+from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, classification_report
+from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.feature_selection import RFE, SelectKBest, f_regression
+    import xgboost as xgb
+    import tensorflow as tf
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import LSTM, Dense, Dropout, Attention, LayerNormalization
+    from tensorflow.keras.optimizers import Adam
+    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+    from mlfinlab.cross_validation import PurgedKFold, CombinatorialPurgedCV
+        import os
+        import pickle
+
 """
 Focused Training Pipeline for 5-Ticker QuantAI Platform.
 
@@ -14,49 +35,30 @@ Features:
 - Overfitting prevention
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any, Union
-import logging
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-import warnings
 warnings.filterwarnings('ignore')
 
 # Core ML libraries
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit
-from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, classification_report
-from sklearn.preprocessing import StandardScaler, RobustScaler
-from sklearn.feature_selection import RFE, SelectKBest, f_regression
 
 # Advanced ML libraries
 try:
-    import xgboost as xgb
     XGBOOST_AVAILABLE = True
 except ImportError:
     XGBOOST_AVAILABLE = False
     logging.warning("XGBoost not available. Install with: pip install xgboost")
 
 try:
-    import tensorflow as tf
-    from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import LSTM, Dense, Dropout, Attention, LayerNormalization
-    from tensorflow.keras.optimizers import Adam
-    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
     TENSORFLOW_AVAILABLE = True
 except ImportError:
     TENSORFLOW_AVAILABLE = False
     logging.warning("TensorFlow not available. Install with: pip install tensorflow")
 
 try:
-    from mlfinlab.cross_validation import PurgedKFold, CombinatorialPurgedCV
     MLFINLAB_AVAILABLE = True
 except ImportError:
     MLFINLAB_AVAILABLE = False
     logging.warning("MLFinLab not available. Install with: pip install mlfinlab")
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass
@@ -776,8 +778,6 @@ class FocusedTrainingPipeline:
     
     def save_models(self, output_dir: str = "focused_models"):
         """Save all trained models."""
-        import os
-        import pickle
         
         os.makedirs(output_dir, exist_ok=True)
         

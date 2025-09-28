@@ -1,3 +1,14 @@
+from src.utils.common_imports import *
+import getpass
+from typing import Optional, Dict
+import logging
+    from ..database.db_manager import QuantAIDatabase
+    from ..portfolio.portfolio_manager import PortfolioManager
+    from ..data.data_sources import DataManager
+        from database.db_manager import QuantAIDatabase
+        from portfolio.portfolio_manager import PortfolioManager
+        from data.data_sources import DataManager
+
 """
 Terminal Interface for QuantAI Portfolio Manager & Trade Suggestion Bot.
 
@@ -5,22 +16,13 @@ This module provides a command-line interface for users to interact with
 the portfolio management system, view recommendations, and manage positions.
 """
 
-import getpass
-from typing import Optional, Dict
-import logging
 
 # Import database and portfolio managers
 try:
-    from ..database.db_manager import QuantAIDatabase
-    from ..portfolio.portfolio_manager import PortfolioManager
-    from ..data.data_sources import DataManager
     MODULES_AVAILABLE = True
 except ImportError:
     try:
         # Fallback for direct execution
-        from database.db_manager import QuantAIDatabase
-        from portfolio.portfolio_manager import PortfolioManager
-        from data.data_sources import DataManager
         MODULES_AVAILABLE = True
     except ImportError:
         MODULES_AVAILABLE = False
@@ -43,7 +45,7 @@ class QuantAITerminalInterface:
             self.data_manager = DataManager() if MODULES_AVAILABLE else None
             self.portfolio_manager = PortfolioManager(self.db, self.data_manager)
             self.current_user_id = None
-            self.logger = logging.getLogger(__name__)
+            self.logger = setup_logger()
             
             # Initialize database
             self.db.create_tables()
@@ -67,7 +69,7 @@ class QuantAITerminalInterface:
         self.db = FallbackDB()
         self.portfolio_manager = PortfolioManager(self.db)
         self.current_user_id = 1
-        self.logger = logging.getLogger(__name__)
+        self.logger = setup_logger()
     
     def start(self):
         """Start the terminal interface"""

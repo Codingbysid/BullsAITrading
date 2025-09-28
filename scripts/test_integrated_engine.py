@@ -1,3 +1,15 @@
+from src.utils.common_imports import *
+from src.utils.common_imports import setup_logger
+import sys
+import argparse
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, List
+import asyncio
+from src.utils.data_processing import data_processor
+from src.decision_engine.four_model_engine import FourModelDecisionEngine
+        import json
+
 #!/usr/bin/env python3
 """
 Test Integrated Four-Model Decision Engine
@@ -9,24 +21,13 @@ Usage:
     python scripts/test_integrated_engine.py
 """
 
-import sys
-import argparse
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List
-import asyncio
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import unified utilities
-from src.utils.common_imports import setup_logger
-from src.utils.data_processing import data_processor
 
 # Import decision engine
-from src.decision_engine.four_model_engine import FourModelDecisionEngine
 
 logger = setup_logger(__name__)
 
@@ -286,7 +287,6 @@ def main():
         print(f"   Success Rate: {results['successful_tests']/results['total_symbols_tested']:.1%}")
         
         # Save results
-        import json
         with open(args.output, 'w') as f:
             json.dump(results, f, indent=2, default=str)
         print(f"\n💾 Results saved to {args.output}")

@@ -1,0 +1,809 @@
+#!/usr/bin/env python3
+"""
+PRD-Compliant Real Market Data Integration for QuantAI Trading Platform.
+
+This module implements the original PRD data sources and APIs:
+- Primary APIs: Finazon, FinViz, Alpha Vantage, Twelve Data
+- Sentiment Sources: News API, Gemini API, social media
+- Historical Data: Kaggle datasets for ML training
+- Backup Sources: YFinance for redundancy
+"""
+
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any, Tuple
+import logging
+import warnings
+warnings.filterwarnings('ignore')
+
+# Data source imports
+try:
+    import yfinance as yf
+    YFINANCE_AVAILABLE = True
+except ImportError:
+    YFINANCE_AVAILABLE = False
+    logging.warning("yfinance not available. Install with: pip install yfinance")
+
+try:
+    from alpha_vantage.timeseries import TimeSeries
+    from alpha_vantage.techindicators import TechIndicators
+    ALPHA_VANTAGE_AVAILABLE = True
+except ImportError:
+    ALPHA_VANTAGE_AVAILABLE = False
+    logging.warning("alpha_vantage not available. Install with: pip install alpha_vantage")
+
+try:
+    import finnhub
+    FINNHUB_AVAILABLE = True
+except ImportError:
+    FINNHUB_AVAILABLE = False
+    logging.warning("finnhub not available. Install with: pip install finnhub-python")
+
+try:
+    from twelvedata import TDClient
+    TWELVE_DATA_AVAILABLE = True
+except ImportError:
+    TWELVE_DATA_AVAILABLE = False
+    logging.warning("twelvedata not available. Install with: pip install twelvedata")
+
+try:
+    from iexfinance.stocks import Stock
+    from iexfinance.refdata import get_symbols
+    IEX_AVAILABLE = True
+except ImportError:
+    IEX_AVAILABLE = False
+    logging.warning("iexfinance not available. Install with: pip install iexfinance")
+
+# PRD-specific imports
+try:
+    import finvizfinance as fv
+    FINVIZ_AVAILABLE = True
+except ImportError:
+    FINVIZ_AVAILABLE = False
+    logging.warning("finvizfinance not available. Install with: pip install finvizfinance")
+
+try:
+    import kaggle
+    KAGGLE_AVAILABLE = True
+except ImportError:
+    KAGGLE_AVAILABLE = False
+    logging.warning("kaggle not available. Install with: pip install kaggle")
+
+# Sentiment analysis imports (PRD specified)
+try:
+    import nltk
+    from textblob import TextBlob
+    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+    NLTK_AVAILABLE = True
+except ImportError:
+    NLTK_AVAILABLE = False
+    logging.warning("NLTK/sentiment analysis not available")
+
+try:
+    import spacy
+    SPACY_AVAILABLE = True
+except ImportError:
+    SPACY_AVAILABLE = False
+    logging.warning("spaCy not available. Install with: pip install spacy")
+
+try:
+    from transformers import pipeline
+    TRANSFORMERS_AVAILABLE = True
+except ImportError:
+    TRANSFORMERS_AVAILABLE = False
+    logging.warning("transformers not available. Install with: pip install transformers")
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+
+class PRDMarketDataIntegration:
+    """
+    PRD-Compliant real market data integration system.
+    
+    Implements the original PRD data sources and APIs:
+    - Primary APIs: Finazon, FinViz, Alpha Vantage, Twelve Data
+    - Sentiment Sources: News API, Gemini API, social media
+    - Historical Data: Kaggle datasets for ML training
+    - Backup Sources: YFinance for redundancy
+    """
+    
+    def __init__(self, 
+                 finazon_key: Optional[str] = None,
+                 alpha_vantage_key: Optional[str] = None,
+                 twelve_data_key: Optional[str] = None,
+                 news_api_key: Optional[str] = None,
+                 gemini_key: Optional[str] = None,
+                 finnhub_key: Optional[str] = None,
+                 iex_key: Optional[str] = None):
+        """
+        Initialize PRD-compliant market data integration.
+        
+        Args:
+            finazon_key: Finazon API key (PRD primary)
+            alpha_vantage_key: Alpha Vantage API key (PRD primary)
+            twelve_data_key: Twelve Data API key (PRD primary)
+            news_api_key: News API key (PRD sentiment)
+            gemini_key: Gemini API key (PRD sentiment)
+            finnhub_key: Finnhub API key (backup)
+            iex_key: IEX Cloud API key (backup)
+        """
+        self.finazon_key = finazon_key
+        self.alpha_vantage_key = alpha_vantage_key
+        self.twelve_data_key = twelve_data_key
+        self.news_api_key = news_api_key
+        self.gemini_key = gemini_key
+        self.finnhub_key = finnhub_key
+        self.iex_key = iex_key
+        
+        # Initialize data sources
+        self._init_data_sources()
+        
+        # Data quality settings
+        self.min_data_points = 100
+        self.max_retries = 3
+        self.retry_delay = 1
+        
+    def _init_data_sources(self):
+        """Initialize available data sources."""
+        self.data_sources = {}
+        
+        # Yahoo Finance (always available)
+        if YFINANCE_AVAILABLE:
+            self.data_sources['yfinance'] = {
+                'available': True,
+                'priority': 1,
+                'description': 'Yahoo Finance - Free historical and real-time data'
+            }
+        
+        # Alpha Vantage
+        if ALPHA_VANTAGE_AVAILABLE and self.alpha_vantage_key:
+            self.data_sources['alpha_vantage'] = {
+                'available': True,
+                'priority': 2,
+                'description': 'Alpha Vantage - Technical indicators and fundamental data'
+            }
+        
+        # Finnhub
+        if FINNHUB_AVAILABLE and self.finnhub_key:
+            self.data_sources['finnhub'] = {
+                'available': True,
+                'priority': 3,
+                'description': 'Finnhub - Real-time data and news'
+            }
+        
+        # Twelve Data
+        if TWELVE_DATA_AVAILABLE and self.twelve_data_key:
+            self.data_sources['twelve_data'] = {
+                'available': True,
+                'priority': 4,
+                'description': 'Twelve Data - Multi-asset data'
+            }
+        
+        # IEX Cloud
+        if IEX_AVAILABLE and self.iex_key:
+            self.data_sources['iex'] = {
+                'available': True,
+                'priority': 5,
+                'description': 'IEX Cloud - Professional market data'
+            }
+        
+        logger.info(f"Initialized {len(self.data_sources)} data sources")
+        for source, info in self.data_sources.items():
+            logger.info(f"  {source}: {info['description']}")
+    
+    def get_historical_data(self, 
+                          symbols: List[str], 
+                          start_date: datetime, 
+                          end_date: datetime,
+                          interval: str = '1d') -> Dict[str, pd.DataFrame]:
+        """
+        Get historical data for multiple symbols.
+        
+        Args:
+            symbols: List of stock symbols
+            start_date: Start date for data
+            end_date: End date for data
+            interval: Data interval (1d, 1h, 5m, etc.)
+            
+        Returns:
+            Dictionary with symbol as key and DataFrame as value
+        """
+        logger.info(f"Fetching historical data for {len(symbols)} symbols")
+        logger.info(f"Period: {start_date} to {end_date}")
+        logger.info(f"Interval: {interval}")
+        
+        data_dict = {}
+        
+        for symbol in symbols:
+            try:
+                # Try multiple data sources with fallback
+                data = self._get_symbol_data_with_fallback(
+                    symbol, start_date, end_date, interval
+                )
+                
+                if data is not None and len(data) >= self.min_data_points:
+                    data_dict[symbol] = data
+                    logger.info(f"✅ {symbol}: {len(data)} records")
+                else:
+                    logger.warning(f"⚠️ {symbol}: Insufficient data ({len(data) if data is not None else 0} records)")
+                    
+            except Exception as e:
+                logger.error(f"❌ {symbol}: Error fetching data - {e}")
+        
+        logger.info(f"Successfully fetched data for {len(data_dict)}/{len(symbols)} symbols")
+        return data_dict
+    
+    def _get_symbol_data_with_fallback(self, 
+                                     symbol: str, 
+                                     start_date: datetime, 
+                                     end_date: datetime,
+                                     interval: str) -> Optional[pd.DataFrame]:
+        """Get data for a single symbol with fallback mechanisms."""
+        
+        # Try data sources in priority order
+        for source_name in sorted(self.data_sources.keys(), 
+                                key=lambda x: self.data_sources[x]['priority']):
+            try:
+                if source_name == 'yfinance':
+                    data = self._get_yfinance_data(symbol, start_date, end_date, interval)
+                elif source_name == 'alpha_vantage':
+                    data = self._get_alpha_vantage_data(symbol, start_date, end_date, interval)
+                elif source_name == 'finnhub':
+                    data = self._get_finnhub_data(symbol, start_date, end_date, interval)
+                elif source_name == 'twelve_data':
+                    data = self._get_twelve_data_data(symbol, start_date, end_date, interval)
+                elif source_name == 'iex':
+                    data = self._get_iex_data(symbol, start_date, end_date, interval)
+                else:
+                    continue
+                
+                if data is not None and len(data) >= self.min_data_points:
+                    logger.debug(f"✅ {symbol} data from {source_name}")
+                    return data
+                    
+            except Exception as e:
+                logger.debug(f"❌ {symbol} from {source_name}: {e}")
+                continue
+        
+        logger.warning(f"❌ {symbol}: No data source available")
+        return None
+    
+    def _get_yfinance_data(self, symbol: str, start_date: datetime, end_date: datetime, interval: str) -> Optional[pd.DataFrame]:
+        """Get data from Yahoo Finance."""
+        try:
+            ticker = yf.Ticker(symbol)
+            data = ticker.history(start=start_date, end=end_date, interval=interval)
+            
+            if data.empty:
+                return None
+            
+            # Standardize column names
+            data = data.rename(columns={
+                'Open': 'open',
+                'High': 'high', 
+                'Low': 'low',
+                'Close': 'close',
+                'Volume': 'volume'
+            })
+            
+            # Add symbol column
+            data['symbol'] = symbol
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Yahoo Finance error for {symbol}: {e}")
+            return None
+    
+    def _get_alpha_vantage_data(self, symbol: str, start_date: datetime, end_date: datetime, interval: str) -> Optional[pd.DataFrame]:
+        """Get data from Alpha Vantage."""
+        try:
+            ts = TimeSeries(key=self.alpha_vantage_key, output_format='pandas')
+            
+            # Map interval
+            av_interval = 'daily' if interval == '1d' else 'intraday'
+            
+            if av_interval == 'daily':
+                data, _ = ts.get_daily_adjusted(symbol, outputsize='full')
+            else:
+                data, _ = ts.get_intraday(symbol, interval=interval, outputsize='full')
+            
+            if data.empty:
+                return None
+            
+            # Standardize column names
+            data = data.rename(columns={
+                '1. open': 'open',
+                '2. high': 'high',
+                '3. low': 'low', 
+                '4. close': 'close',
+                '5. volume': 'volume'
+            })
+            
+            # Filter by date range
+            data = data[(data.index >= start_date) & (data.index <= end_date)]
+            
+            # Add symbol column
+            data['symbol'] = symbol
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Alpha Vantage error for {symbol}: {e}")
+            return None
+    
+    def _get_finnhub_data(self, symbol: str, start_date: datetime, end_date: datetime, interval: str) -> Optional[pd.DataFrame]:
+        """Get data from Finnhub."""
+        try:
+            client = finnhub.Client(api_key=self.finnhub_key)
+            
+            # Convert dates to timestamps
+            start_ts = int(start_date.timestamp())
+            end_ts = int(end_date.timestamp())
+            
+            # Get candlestick data
+            data = client.stock_candles(symbol, interval, start_ts, end_ts)
+            
+            if not data or 'c' not in data:
+                return None
+            
+            # Convert to DataFrame
+            df = pd.DataFrame({
+                'timestamp': pd.to_datetime(data['t'], unit='s'),
+                'open': data['o'],
+                'high': data['h'],
+                'low': data['l'],
+                'close': data['c'],
+                'volume': data['v']
+            })
+            
+            df.set_index('timestamp', inplace=True)
+            df['symbol'] = symbol
+            
+            return df
+            
+        except Exception as e:
+            logger.error(f"Finnhub error for {symbol}: {e}")
+            return None
+    
+    def _get_twelve_data_data(self, symbol: str, start_date: datetime, end_date: datetime, interval: str) -> Optional[pd.DataFrame]:
+        """Get data from Twelve Data."""
+        try:
+            td = TDClient(apikey=self.twelve_data_key)
+            
+            # Get time series data
+            data = td.time_series(
+                symbol=symbol,
+                interval=interval,
+                start_date=start_date.strftime('%Y-%m-%d'),
+                end_date=end_date.strftime('%Y-%m-%d'),
+                outputsize=5000
+            )
+            
+            if not data or 'values' not in data:
+                return None
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(data['values'])
+            df['datetime'] = pd.to_datetime(df['datetime'])
+            df.set_index('datetime', inplace=True)
+            
+            # Standardize column names
+            df = df.rename(columns={
+                'open': 'open',
+                'high': 'high',
+                'low': 'low',
+                'close': 'close',
+                'volume': 'volume'
+            })
+            
+            df['symbol'] = symbol
+            
+            return df
+            
+        except Exception as e:
+            logger.error(f"Twelve Data error for {symbol}: {e}")
+            return None
+    
+    def _get_iex_data(self, symbol: str, start_date: datetime, end_date: datetime, interval: str) -> Optional[pd.DataFrame]:
+        """Get data from IEX Cloud."""
+        try:
+            stock = Stock(symbol, token=self.iex_key)
+            
+            # Get historical data
+            data = stock.get_historical_prices(start_date, end_date)
+            
+            if data.empty:
+                return None
+            
+            # Standardize column names
+            data = data.rename(columns={
+                'open': 'open',
+                'high': 'high',
+                'low': 'low',
+                'close': 'close',
+                'volume': 'volume'
+            })
+            
+            data['symbol'] = symbol
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"IEX Cloud error for {symbol}: {e}")
+            return None
+    
+    def get_real_time_data(self, symbols: List[str]) -> Dict[str, Dict[str, Any]]:
+        """
+        Get real-time data for multiple symbols.
+        
+        Args:
+            symbols: List of stock symbols
+            
+        Returns:
+            Dictionary with symbol as key and real-time data as value
+        """
+        logger.info(f"Fetching real-time data for {len(symbols)} symbols")
+        
+        real_time_data = {}
+        
+        for symbol in symbols:
+            try:
+                # Try Yahoo Finance first (most reliable for real-time)
+                if YFINANCE_AVAILABLE:
+                    data = self._get_yfinance_realtime(symbol)
+                    if data:
+                        real_time_data[symbol] = data
+                        continue
+                
+                # Fallback to other sources
+                for source_name in ['finnhub', 'twelve_data', 'iex']:
+                    if source_name in self.data_sources and self.data_sources[source_name]['available']:
+                        data = self._get_realtime_from_source(symbol, source_name)
+                        if data:
+                            real_time_data[symbol] = data
+                            break
+                
+            except Exception as e:
+                logger.error(f"❌ {symbol}: Error fetching real-time data - {e}")
+        
+        logger.info(f"Successfully fetched real-time data for {len(real_time_data)}/{len(symbols)} symbols")
+        return real_time_data
+    
+    def _get_yfinance_realtime(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """Get real-time data from Yahoo Finance."""
+        try:
+            ticker = yf.Ticker(symbol)
+            info = ticker.info
+            
+            return {
+                'symbol': symbol,
+                'price': info.get('currentPrice', 0),
+                'change': info.get('regularMarketChange', 0),
+                'change_percent': info.get('regularMarketChangePercent', 0),
+                'volume': info.get('volume', 0),
+                'market_cap': info.get('marketCap', 0),
+                'timestamp': datetime.now()
+            }
+            
+        except Exception as e:
+            logger.error(f"Yahoo Finance real-time error for {symbol}: {e}")
+            return None
+    
+    def _get_realtime_from_source(self, symbol: str, source: str) -> Optional[Dict[str, Any]]:
+        """Get real-time data from specified source."""
+        try:
+            if source == 'finnhub':
+                client = finnhub.Client(api_key=self.finnhub_key)
+                quote = client.quote(symbol)
+                
+                return {
+                    'symbol': symbol,
+                    'price': quote.get('c', 0),
+                    'change': quote.get('d', 0),
+                    'change_percent': quote.get('dp', 0),
+                    'volume': quote.get('v', 0),
+                    'timestamp': datetime.now()
+                }
+            
+            elif source == 'twelve_data':
+                td = TDClient(apikey=self.twelve_data_key)
+                data = td.quote(symbol=symbol)
+                
+                return {
+                    'symbol': symbol,
+                    'price': data.get('close', 0),
+                    'change': data.get('change', 0),
+                    'change_percent': data.get('percent_change', 0),
+                    'volume': data.get('volume', 0),
+                    'timestamp': datetime.now()
+                }
+            
+            elif source == 'iex':
+                stock = Stock(symbol, token=self.iex_key)
+                quote = stock.get_quote()
+                
+                return {
+                    'symbol': symbol,
+                    'price': quote.get('latestPrice', 0),
+                    'change': quote.get('change', 0),
+                    'change_percent': quote.get('changePercent', 0),
+                    'volume': quote.get('volume', 0),
+                    'timestamp': datetime.now()
+                }
+            
+        except Exception as e:
+            logger.error(f"{source} real-time error for {symbol}: {e}")
+            return None
+    
+    def get_news_data(self, symbols: List[str], days: int = 7) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Get news data for multiple symbols.
+        
+        Args:
+            symbols: List of stock symbols
+            days: Number of days to look back
+            
+        Returns:
+            Dictionary with symbol as key and list of news articles as value
+        """
+        logger.info(f"Fetching news data for {len(symbols)} symbols")
+        
+        news_data = {}
+        
+        for symbol in symbols:
+            try:
+                if 'finnhub' in self.data_sources and self.data_sources['finnhub']['available']:
+                    news = self._get_finnhub_news(symbol, days)
+                    if news:
+                        news_data[symbol] = news
+                        continue
+                
+                # Fallback to other news sources
+                if YFINANCE_AVAILABLE:
+                    news = self._get_yfinance_news(symbol, days)
+                    if news:
+                        news_data[symbol] = news
+                        
+            except Exception as e:
+                logger.error(f"❌ {symbol}: Error fetching news - {e}")
+        
+        logger.info(f"Successfully fetched news for {len(news_data)}/{len(symbols)} symbols")
+        return news_data
+    
+    def _get_finnhub_news(self, symbol: str, days: int) -> List[Dict[str, Any]]:
+        """Get news from Finnhub."""
+        try:
+            client = finnhub.Client(api_key=self.finnhub_key)
+            
+            # Get company news
+            news = client.company_news(symbol, 
+                                    _from=(datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d'),
+                                    to=datetime.now().strftime('%Y-%m-%d'))
+            
+            return news[:20]  # Limit to 20 articles
+            
+        except Exception as e:
+            logger.error(f"Finnhub news error for {symbol}: {e}")
+            return []
+    
+    def _get_yfinance_news(self, symbol: str, days: int) -> List[Dict[str, Any]]:
+        """Get news from Yahoo Finance."""
+        try:
+            ticker = yf.Ticker(symbol)
+            news = ticker.news
+            
+            # Filter by date
+            cutoff_date = datetime.now() - timedelta(days=days)
+            filtered_news = []
+            
+            for article in news:
+                pub_date = datetime.fromtimestamp(article.get('providerPublishTime', 0))
+                if pub_date >= cutoff_date:
+                    filtered_news.append(article)
+            
+            return filtered_news[:20]  # Limit to 20 articles
+            
+        except Exception as e:
+            logger.error(f"Yahoo Finance news error for {symbol}: {e}")
+            return []
+    
+    def get_technical_indicators(self, symbol: str, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Get technical indicators for a symbol.
+        
+        Args:
+            symbol: Stock symbol
+            data: Historical price data
+            
+        Returns:
+            DataFrame with technical indicators
+        """
+        logger.info(f"Calculating technical indicators for {symbol}")
+        
+        # Add technical indicators
+        data = data.copy()
+        
+        # Moving averages
+        for period in [5, 10, 20, 50, 100, 200]:
+            data[f'sma_{period}'] = data['close'].rolling(period).mean()
+            data[f'ema_{period}'] = data['close'].ewm(span=period).mean()
+        
+        # RSI
+        data['rsi'] = self._calculate_rsi(data['close'])
+        
+        # MACD
+        data['macd'], data['macd_signal'], data['macd_histogram'] = self._calculate_macd(data['close'])
+        
+        # Bollinger Bands
+        data['bb_upper'], data['bb_middle'], data['bb_lower'] = self._calculate_bollinger_bands(data['close'])
+        
+        # Stochastic
+        data['stoch_k'], data['stoch_d'] = self._calculate_stochastic(data)
+        
+        # Volume indicators
+        data['obv'] = self._calculate_obv(data)
+        data['vwap'] = self._calculate_vwap(data)
+        
+        return data
+    
+    def _calculate_rsi(self, prices: pd.Series, period: int = 14) -> pd.Series:
+        """Calculate RSI."""
+        delta = prices.diff()
+        gain = delta.where(delta > 0, 0)
+        loss = -delta.where(delta < 0, 0)
+        
+        avg_gain = gain.rolling(period).mean()
+        avg_loss = loss.rolling(period).mean()
+        
+        rs = avg_gain / avg_loss
+        rsi = 100 - (100 / (1 + rs))
+        
+        return rsi
+    
+    def _calculate_macd(self, prices: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9) -> Tuple[pd.Series, pd.Series, pd.Series]:
+        """Calculate MACD."""
+        ema_fast = prices.ewm(span=fast).mean()
+        ema_slow = prices.ewm(span=slow).mean()
+        
+        macd = ema_fast - ema_slow
+        macd_signal = macd.ewm(span=signal).mean()
+        macd_histogram = macd - macd_signal
+        
+        return macd, macd_signal, macd_histogram
+    
+    def _calculate_bollinger_bands(self, prices: pd.Series, period: int = 20, std_dev: float = 2) -> Tuple[pd.Series, pd.Series, pd.Series]:
+        """Calculate Bollinger Bands."""
+        sma = prices.rolling(period).mean()
+        std = prices.rolling(period).std()
+        
+        upper = sma + (std * std_dev)
+        lower = sma - (std * std_dev)
+        
+        return upper, sma, lower
+    
+    def _calculate_stochastic(self, data: pd.DataFrame, k_period: int = 14, d_period: int = 3) -> Tuple[pd.Series, pd.Series]:
+        """Calculate Stochastic Oscillator."""
+        low_min = data['low'].rolling(k_period).min()
+        high_max = data['high'].rolling(k_period).max()
+        
+        k_percent = 100 * (data['close'] - low_min) / (high_max - low_min)
+        d_percent = k_percent.rolling(d_period).mean()
+        
+        return k_percent, d_percent
+    
+    def _calculate_obv(self, data: pd.DataFrame) -> pd.Series:
+        """Calculate On-Balance Volume."""
+        obv = (data['volume'] * np.sign(data['close'].diff())).cumsum()
+        return obv
+    
+    def _calculate_vwap(self, data: pd.DataFrame, period: int = 20) -> pd.Series:
+        """Calculate Volume Weighted Average Price."""
+        vwap = (data['close'] * data['volume']).rolling(period).sum() / data['volume'].rolling(period).sum()
+        return vwap
+    
+    def get_data_quality_report(self, data: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
+        """
+        Generate data quality report.
+        
+        Args:
+            data: Dictionary with symbol as key and DataFrame as value
+            
+        Returns:
+            Data quality report
+        """
+        report = {
+            'total_symbols': len(data),
+            'symbols_with_data': 0,
+            'total_records': 0,
+            'data_quality': {},
+            'recommendations': []
+        }
+        
+        for symbol, df in data.items():
+            if df is not None and not df.empty:
+                report['symbols_with_data'] += 1
+                report['total_records'] += len(df)
+                
+                # Data quality metrics
+                quality = {
+                    'records': len(df),
+                    'date_range': f"{df.index.min()} to {df.index.max()}",
+                    'missing_values': df.isnull().sum().sum(),
+                    'duplicate_dates': df.index.duplicated().sum(),
+                    'price_range': f"${df['close'].min():.2f} - ${df['close'].max():.2f}",
+                    'avg_volume': int(df['volume'].mean()) if 'volume' in df.columns else 0
+                }
+                
+                report['data_quality'][symbol] = quality
+                
+                # Recommendations
+                if quality['missing_values'] > 0:
+                    report['recommendations'].append(f"{symbol}: {quality['missing_values']} missing values")
+                
+                if quality['records'] < 100:
+                    report['recommendations'].append(f"{symbol}: Only {quality['records']} records (minimum 100 recommended)")
+        
+        return report
+
+
+def main():
+    """Demo function to test real market data integration."""
+    print("🌐 QuantAI Trading Platform - PRD Data Integration")
+    print("=" * 70)
+    
+    # Initialize with PRD API keys (replace with your actual keys)
+    data_integration = PRDMarketDataIntegration(
+        finazon_key=None,        # Add your Finazon key (PRD primary)
+        alpha_vantage_key=None,  # Add your Alpha Vantage key (PRD primary)
+        twelve_data_key=None,    # Add your Twelve Data key (PRD primary)
+        news_api_key=None,       # Add your News API key (PRD sentiment)
+        gemini_key=None,         # Add your Gemini key (PRD sentiment)
+        finnhub_key=None,        # Add your Finnhub key (backup)
+        iex_key=None            # Add your IEX Cloud key (backup)
+    )
+    
+    # Test symbols
+    symbols = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']
+    
+    # Get historical data
+    print("\n📊 Fetching historical data...")
+    start_date = datetime.now() - timedelta(days=365)
+    end_date = datetime.now()
+    
+    historical_data = data_integration.get_historical_data(
+        symbols=symbols,
+        start_date=start_date,
+        end_date=end_date,
+        interval='1d'
+    )
+    
+    # Generate data quality report
+    if historical_data:
+        print("\n📈 Data Quality Report:")
+        report = data_integration.get_data_quality_report(historical_data)
+        
+        print(f"Total symbols: {report['total_symbols']}")
+        print(f"Symbols with data: {report['symbols_with_data']}")
+        print(f"Total records: {report['total_records']}")
+        
+        if report['recommendations']:
+            print("\n⚠️ Recommendations:")
+            for rec in report['recommendations']:
+                print(f"  - {rec}")
+    
+    # Get real-time data
+    print("\n🔄 Fetching real-time data...")
+    real_time_data = data_integration.get_real_time_data(symbols)
+    
+    for symbol, data in real_time_data.items():
+        print(f"{symbol}: ${data['price']:.2f} ({data['change_percent']:.2f}%)")
+    
+    print("\n✅ Real market data integration test completed!")
+
+
+if __name__ == "__main__":
+    main()

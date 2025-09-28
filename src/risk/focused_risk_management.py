@@ -1,3 +1,13 @@
+from src.utils.common_imports import *
+from src.utils.risk_utils import RiskCalculator
+from src.utils.performance_metrics import PerformanceCalculator
+from typing import Dict, List, Optional, Tuple, Any
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+import warnings
+    import cvxpy as cp
+
 """
 Focused Risk Management for 5-Ticker QuantAI Platform.
 
@@ -13,26 +23,18 @@ Features:
 - Real-time risk monitoring
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
-import logging
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-import warnings
 warnings.filterwarnings('ignore')
 
 # Advanced risk libraries
 SCIPY_AVAILABLE = False  # Disabled to avoid scipy dependency issues
 
 try:
-    import cvxpy as cp
     CVXPY_AVAILABLE = True
 except ImportError:
     CVXPY_AVAILABLE = False
     logging.warning("CVXPY not available. Install with: pip install cvxpy")
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass
@@ -174,10 +176,8 @@ class FocusedRiskManager:
         }
         return sectors.get(symbol, 'Unknown')
     
-    def calculate_kelly_position_size(
-        self, 
-        symbol: str, 
-        expected_return: float, 
+    risk_calc = RiskCalculator()
+# Use: risk_calc.calculate_kelly_fraction(win_prob, avg_win, avg_loss)
         confidence: float
     ) -> float:
         """
@@ -343,9 +343,8 @@ class FocusedRiskManager:
         drawdown = (cumulative - peak) / peak
         return np.min(drawdown)
     
-    def calculate_sharpe_ratio(
-        self, 
-        returns: pd.Series, 
+    perf_calc = PerformanceCalculator()
+# Use: perf_calc.calculate_sharpe_ratio(returns)
         risk_free_rate: float = 0.02
     ) -> float:
         """Calculate Sharpe ratio."""

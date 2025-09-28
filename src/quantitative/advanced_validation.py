@@ -1,3 +1,17 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Optional, Tuple, Any, Union
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from sklearn.model_selection import BaseCrossValidator
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.base import BaseEstimator
+import warnings
+    from mlfinlab.cross_validation import PurgedKFold, combinatorial_purged_cv
+    from mlfinlab.data_structures import get_daily_vol
+    import empyrical as ep
+        from scipy import stats
+
 """
 Advanced Cross-Validation and Backtesting for QuantAI Trading Platform.
 
@@ -9,35 +23,22 @@ This module implements sophisticated validation techniques including:
 - Statistical significance testing
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any, Union
-import logging
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from sklearn.model_selection import BaseCrossValidator
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.base import BaseEstimator
-import warnings
 warnings.filterwarnings('ignore')
 
 # Advanced validation libraries
 try:
-    from mlfinlab.cross_validation import PurgedKFold, combinatorial_purged_cv
-    from mlfinlab.data_structures import get_daily_vol
     MLFINLAB_AVAILABLE = True
 except ImportError:
     MLFINLAB_AVAILABLE = False
     logging.warning("MLFinLab not available. Install with: pip install mlfinlab")
 
 try:
-    import empyrical as ep
     EMPYRICIAL_AVAILABLE = True
 except ImportError:
     EMPYRICIAL_AVAILABLE = False
     logging.warning("Empyrical not available. Install with: pip install empyrical-reloaded")
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass
@@ -222,7 +223,6 @@ class PurgedTimeSeriesCV:
             overfitting_risk = "LOW"
         
         # Statistical significance testing
-        from scipy import stats
         if len(train_scores) > 1 and len(test_scores) > 1:
             t_stat, p_value = stats.ttest_rel(train_scores, test_scores)
             statistical_significance = {
@@ -610,7 +610,6 @@ class AdvancedPerformanceMetrics:
     
     def _calculate_statistical_significance(self, returns: pd.Series) -> Dict[str, float]:
         """Calculate statistical significance of returns."""
-        from scipy import stats
         
         # T-test for mean return
         t_stat, p_value = stats.ttest_1samp(returns, 0)

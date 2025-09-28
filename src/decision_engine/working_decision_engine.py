@@ -1,3 +1,13 @@
+from src.utils.common_imports import *
+import sys
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, List, Optional
+import json
+            import sys
+            from pathlib import Path
+            from models.trained_ml_ensemble import TrainedMLEnsembleModel
+
 #!/usr/bin/env python3
 """
 Working Decision Engine for Local Environment
@@ -6,13 +16,6 @@ This is a simplified version of the four-model decision engine
 that works in the local environment without import issues.
 """
 
-import sys
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List, Optional
-import json
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -60,10 +63,7 @@ class WorkingDecisionEngine:
         
         try:
             # Load the trained ML ensemble
-            import sys
-            from pathlib import Path
             sys.path.append(str(Path(__file__).parent.parent))
-            from models.trained_ml_ensemble import TrainedMLEnsembleModel
             ml_ensemble = TrainedMLEnsembleModel()
             
             # Get ML ensemble prediction

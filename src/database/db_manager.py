@@ -1,10 +1,4 @@
-"""
-Database Manager for QuantAI Portfolio Manager & Trade Suggestion Bot.
-
-This module manages the core database operations for user management,
-portfolio tracking, and recommendation feedback learning.
-"""
-
+from src.utils.common_imports import *
 import mysql.connector
 from mysql.connector import Error
 import hashlib
@@ -12,6 +6,15 @@ import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 import logging
+            import sqlite3
+
+"""
+Database Manager for QuantAI Portfolio Manager & Trade Suggestion Bot.
+
+This module manages the core database operations for user management,
+portfolio tracking, and recommendation feedback learning.
+"""
+
 
 class QuantAIDatabase:
     """Database manager for QuantAI Portfolio Manager"""
@@ -19,7 +22,7 @@ class QuantAIDatabase:
     def __init__(self, config: dict):
         self.config = config
         self.connection = None
-        self.logger = logging.getLogger(__name__)
+        self.logger = setup_logger()
         self.connect()
     
     def connect(self):
@@ -40,7 +43,6 @@ class QuantAIDatabase:
     def _create_sqlite_fallback(self):
         """Create SQLite fallback for development"""
         try:
-            import sqlite3
             self.connection = sqlite3.connect('quantai_portfolio.db')
             self.logger.info("Using SQLite fallback database")
         except ImportError:

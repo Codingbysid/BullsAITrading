@@ -1,3 +1,14 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Optional
+import logging
+from datetime import datetime, timedelta
+    from ..database.db_manager import QuantAIDatabase
+    from ..portfolio.portfolio_manager import PortfolioManager
+    from ..training.feedback_trainer import ReinforcementFeedbackTrainer
+    from database.db_manager import QuantAIDatabase
+    from portfolio.portfolio_manager import PortfolioManager
+    from training.feedback_trainer import ReinforcementFeedbackTrainer
+
 """
 User Journey Flow System for QuantAI Portfolio Manager.
 
@@ -5,18 +16,9 @@ This module implements the complete user journey from registration
 to portfolio management with AI recommendations and learning.
 """
 
-from typing import Dict, List, Optional
-import logging
-from datetime import datetime, timedelta
 try:
-    from ..database.db_manager import QuantAIDatabase
-    from ..portfolio.portfolio_manager import PortfolioManager
-    from ..training.feedback_trainer import ReinforcementFeedbackTrainer
 except ImportError:
     # Fallback for direct execution
-    from database.db_manager import QuantAIDatabase
-    from portfolio.portfolio_manager import PortfolioManager
-    from training.feedback_trainer import ReinforcementFeedbackTrainer
 
 class UserJourneyManager:
     """Manages the complete user journey flow"""
@@ -25,7 +27,7 @@ class UserJourneyManager:
         self.db = db
         self.portfolio_manager = portfolio_manager
         self.feedback_trainer = ReinforcementFeedbackTrainer(db)
-        self.logger = logging.getLogger(__name__)
+        self.logger = setup_logger()
         self.symbols = ['AMZN', 'META', 'NVDA', 'GOOGL', 'AAPL']
     
     def complete_user_onboarding(self, user_id: int) -> Dict:

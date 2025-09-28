@@ -1,3 +1,20 @@
+from src.utils.common_imports import *
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from typing import Dict, List, Optional, Any
+from datetime import datetime, timedelta
+import logging
+import asyncio
+from ..config.settings import get_settings
+from ..data.data_sources import data_manager
+from ..data.feature_engineering import FeatureEngineer
+from ..data.sentiment_analysis import sentiment_monitor
+from ..models.trading_models import create_ensemble_model
+from ..risk.risk_management import RiskManager
+from ..backtesting.backtesting_engine import BacktestingEngine
+    import uvicorn
+
 """
 FastAPI main application for QuantAI Trading Platform.
 
@@ -9,27 +26,11 @@ This module provides the main API endpoints for:
 - Real-time monitoring
 """
 
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
-import logging
-import asyncio
 
-from ..config.settings import get_settings
-from ..data.data_sources import data_manager
-from ..data.feature_engineering import FeatureEngineer
-from ..data.sentiment_analysis import sentiment_monitor
-from ..models.trading_models import create_ensemble_model
-from ..risk.risk_management import RiskManager
-from ..backtesting.backtesting_engine import BacktestingEngine
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -386,5 +387,4 @@ async def get_model_performance():
 
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

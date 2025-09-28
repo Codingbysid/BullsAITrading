@@ -1,3 +1,11 @@
+from src.utils.common_imports import *
+from typing import Dict, Any, List, Optional, Tuple
+from datetime import datetime
+import logging
+import warnings
+from .base_models import BaseModel, ModelOutput
+from src.models.trading_models import EnsembleTradingModel, RandomForestTradingModel, XGBoostTradingModel, LSTMTradingModel
+
 #!/usr/bin/env python3
 """
 ML Ensemble Model for the four-model decision engine.
@@ -10,18 +18,10 @@ This model combines multiple machine learning algorithms:
 Provides 35% input weight to the RL Decider Agent.
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
-import logging
-import warnings
 warnings.filterwarnings('ignore')
 
-from .base_models import BaseModel, ModelOutput
-from src.models.trading_models import EnsembleTradingModel, RandomForestTradingModel, XGBoostTradingModel, LSTMTradingModel
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class MLEnsembleModel(BaseModel):

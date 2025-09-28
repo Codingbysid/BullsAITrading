@@ -1,16 +1,4 @@
-"""
-Advanced training pipeline with overfitting prevention.
-
-This module implements:
-- Purged cross-validation to prevent data leakage
-- Walk-forward analysis for time series
-- Ensemble methods with regularization
-- Hyperparameter optimization
-- Performance monitoring and early stopping
-"""
-
-import pandas as pd
-import numpy as np
+from src.utils.common_imports import *
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Any
 import logging
@@ -24,7 +12,6 @@ from tensorflow.keras import layers, models, callbacks
 import joblib
 import optuna
 from pathlib import Path
-
 from ..config.settings import get_settings
 from ..data.data_sources import data_manager
 from ..data.feature_engineering import FeatureEngineer
@@ -32,7 +19,20 @@ from ..data.sentiment_analysis import sentiment_aggregator
 from ..models.trading_models import create_ensemble_model
 from ..risk.risk_management import RiskManager
 
-logger = logging.getLogger(__name__)
+"""
+Advanced training pipeline with overfitting prevention.
+
+This module implements:
+- Purged cross-validation to prevent data leakage
+- Walk-forward analysis for time series
+- Ensemble methods with regularization
+- Hyperparameter optimization
+- Performance monitoring and early stopping
+"""
+
+
+
+logger = setup_logger()
 
 
 @dataclass

@@ -1,3 +1,15 @@
+from src.utils.common_imports import *
+import asyncio
+from typing import Dict, List, Any, Optional
+from datetime import datetime, timedelta
+import logging
+from src.models.sentiment_model import SentimentAnalysisModel
+from src.models.quantitative_model import QuantitativeRiskModel  
+from src.models.ml_ensemble_model import MLEnsembleModel
+from src.models.trained_ml_ensemble import TrainedMLEnsembleModel
+from src.models.rl_decider_agent import RLDeciderAgent
+from src.models.base_models import ModelOutput, ModelValidator, RiskAdjuster
+
 #!/usr/bin/env python3
 """
 Unified Decision Engine for the four-model architecture.
@@ -11,21 +23,9 @@ This engine coordinates all four models:
 Provides comprehensive trading decisions with full transparency and risk management.
 """
 
-import asyncio
-from typing import Dict, List, Any, Optional
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import logging
 
-from src.models.sentiment_model import SentimentAnalysisModel
-from src.models.quantitative_model import QuantitativeRiskModel  
-from src.models.ml_ensemble_model import MLEnsembleModel
-from src.models.trained_ml_ensemble import TrainedMLEnsembleModel
-from src.models.rl_decider_agent import RLDeciderAgent
-from src.models.base_models import ModelOutput, ModelValidator, RiskAdjuster
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class FourModelDecisionEngine:

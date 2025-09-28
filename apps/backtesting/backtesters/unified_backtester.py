@@ -1,3 +1,16 @@
+from src.utils.common_imports import *
+import sys
+import os
+from pathlib import Path
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any, Tuple
+import json
+import logging
+import asyncio
+from apps.backtesting.base_backtester import BaseBacktester
+    from src.decision_engine.four_model_engine import FourModelDecisionEngine
+    from src.training.four_model_training import FourModelTrainingPipeline
+
 #!/usr/bin/env python3
 """
 Unified Backtester for QuantAI Trading Platform.
@@ -13,28 +26,15 @@ Features:
 - No code duplication
 """
 
-import sys
-import os
-from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.append(str(project_root))
 
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
-import json
-import logging
-import asyncio
 
-from apps.backtesting.base_backtester import BaseBacktester
 
 # Try to import four-model decision engine
 try:
-    from src.decision_engine.four_model_engine import FourModelDecisionEngine
-    from src.training.four_model_training import FourModelTrainingPipeline
     FOUR_MODEL_AVAILABLE = True
 except ImportError:
     FOUR_MODEL_AVAILABLE = False
@@ -42,7 +42,7 @@ except ImportError:
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class FourModelBacktester(BaseBacktester):

@@ -1,3 +1,10 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Optional, Tuple, Any, Union
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+import warnings
+
 """
 Basic ML Models for 5-Ticker QuantAI Platform.
 
@@ -10,16 +17,9 @@ Features:
 - No external ML dependencies
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any, Union
-import logging
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-import warnings
 warnings.filterwarnings('ignore')
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass

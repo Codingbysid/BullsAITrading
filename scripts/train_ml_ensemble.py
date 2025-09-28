@@ -1,3 +1,26 @@
+from src.utils.common_imports import *
+from utils.common_imports import setup_logger
+import sys
+import argparse
+from pathlib import Path
+from datetime import datetime
+from typing import List, Dict, Any, Tuple
+import joblib
+import json
+import warnings
+from utils.data_processing import data_processor
+from utils.feature_engineering import feature_engineer
+from utils.performance_metrics import performance_calculator
+from utils.config_manager import config_manager
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import train_test_split, cross_val_score
+    from sklearn.metrics import classification_report, confusion_matrix
+    from sklearn.preprocessing import StandardScaler
+    import xgboost as xgb
+    import tensorflow as tf
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import LSTM, Dense, Dropout
+
 #!/usr/bin/env python3
 """
 ML Ensemble Model Training Script
@@ -9,50 +32,27 @@ Usage:
     python scripts/train_ml_ensemble.py --datasets datasets/ --output models/
 """
 
-import sys
-import argparse
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Any, Tuple
-import joblib
-import json
-import warnings
 warnings.filterwarnings('ignore')
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 # Import unified utilities
-from utils.common_imports import setup_logger
-from utils.data_processing import data_processor
-from utils.feature_engineering import feature_engineer
-from utils.performance_metrics import performance_calculator
-from utils.config_manager import config_manager
 
 # Import ML models
 try:
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import train_test_split, cross_val_score
-    from sklearn.metrics import classification_report, confusion_matrix
-    from sklearn.preprocessing import StandardScaler
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
     print("Warning: scikit-learn not available, using simplified models")
 
 try:
-    import xgboost as xgb
     XGBOOST_AVAILABLE = True
 except ImportError:
     XGBOOST_AVAILABLE = False
     print("Warning: XGBoost not available, using alternative")
 
 try:
-    import tensorflow as tf
-    from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import LSTM, Dense, Dropout
     TENSORFLOW_AVAILABLE = True
 except ImportError:
     TENSORFLOW_AVAILABLE = False

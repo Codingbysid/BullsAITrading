@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-"""
-QuantAI Trading Platform - Project Manager
-
-This script provides comprehensive project management functionality
-including setup, testing, deployment, and maintenance.
-"""
-
+            from src.utils.common_imports import *
 import os
 import sys
 import subprocess
@@ -15,10 +8,20 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 import logging
 from datetime import datetime
+            import yfinance as yf
+
+#!/usr/bin/env python3
+"""
+QuantAI Trading Platform - Project Manager
+
+This script provides comprehensive project management functionality
+including setup, testing, deployment, and maintenance.
+"""
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class QuantAIProjectManager:
@@ -291,9 +294,6 @@ RISK_FREE_RATE=0.02
     def _test_imports(self) -> bool:
         """Test basic imports."""
         try:
-            import pandas as pd
-            import numpy as np
-            import yfinance as yf
             return True
         except ImportError as e:
             logger.error(f"Import error: {e}")
@@ -317,7 +317,6 @@ RISK_FREE_RATE=0.02
     def _test_market_data(self) -> bool:
         """Test market data integration."""
         try:
-            import yfinance as yf
             ticker = yf.Ticker("AAPL")
             info = ticker.info
             return info is not None

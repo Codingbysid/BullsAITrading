@@ -1,3 +1,11 @@
+from src.utils.common_imports import *
+import sys
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, List
+        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
+        from real_ai_recommendations import RealAIRecommendations
+
 #!/usr/bin/env python3
 """
 Run Four-Model Stock Recommendations
@@ -6,12 +14,6 @@ This script runs the complete four-model decision engine and shows
 AI recommendations for all stocks without interactive input.
 """
 
-import sys
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / 'src'))
@@ -25,7 +27,6 @@ def run_four_model_recommendations():
     print("=" * 60)
     
     try:
-        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         # Initialize portfolio manager
         portfolio_manager = LocalPortfolioManager()
@@ -100,7 +101,6 @@ def run_simple_recommendations():
     print("=" * 40)
     
     try:
-        from real_ai_recommendations import RealAIRecommendations
         
         # Initialize AI recommendations
         ai_recommendations = RealAIRecommendations()

@@ -1,3 +1,14 @@
+from src.utils.common_imports import *
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from collections import deque
+import random
+from typing import Dict, List, Tuple, Any, Optional
+from datetime import datetime
+import logging
+from .base_models import BaseModel, ModelOutput
+
 #!/usr/bin/env python3
 """
 RL Decider Agent for the four-model decision engine.
@@ -10,20 +21,9 @@ This is the final decision maker that combines inputs from:
 Uses Deep Q-Network (DQN) with risk-adjusted Q-values for final trading decisions.
 """
 
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from collections import deque
-import random
-from typing import Dict, List, Tuple, Any, Optional
-from datetime import datetime
-import logging
 
-from .base_models import BaseModel, ModelOutput
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class RLDeciderState:

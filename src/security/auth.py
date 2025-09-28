@@ -1,10 +1,4 @@
-"""
-Authentication and Security Module for QuantAI Portfolio Manager.
-
-This module handles user authentication, authorization, and security
-features including password hashing, session management, and rate limiting.
-"""
-
+from src.utils.common_imports import *
 import hashlib
 import hmac
 import secrets
@@ -14,13 +8,21 @@ from datetime import datetime, timedelta
 import logging
 from ..database.db_manager import QuantAIDatabase
 
+"""
+Authentication and Security Module for QuantAI Portfolio Manager.
+
+This module handles user authentication, authorization, and security
+features including password hashing, session management, and rate limiting.
+"""
+
+
 class SecurityManager:
     """Handles all security-related operations"""
     
     def __init__(self, db: QuantAIDatabase, settings):
         self.db = db
         self.settings = settings
-        self.logger = logging.getLogger(__name__)
+        self.logger = setup_logger()
         self.failed_attempts = {}  # Track failed login attempts
         self.active_sessions = {}  # Track active sessions
     

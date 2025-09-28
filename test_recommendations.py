@@ -1,3 +1,10 @@
+from src.utils.common_imports import *
+import sys
+from pathlib import Path
+from datetime import datetime
+        from decision_engine.four_model_engine import FourModelDecisionEngine
+        from models.trained_ml_ensemble import TrainedMLEnsembleModel
+
 #!/usr/bin/env python3
 """
 Test Real AI Recommendations
@@ -6,11 +13,6 @@ This script tests the real AI recommendations from the four-model decision engin
 and trained ML ensemble models to show why you're getting different results.
 """
 
-import sys
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / 'src'))
@@ -21,8 +23,6 @@ def test_decision_engine():
     print("=" * 50)
     
     try:
-        from decision_engine.four_model_engine import FourModelDecisionEngine
-        from models.trained_ml_ensemble import TrainedMLEnsembleModel
         
         # Initialize decision engine
         engine = FourModelDecisionEngine()
@@ -83,7 +83,6 @@ def test_ml_ensemble():
     print("=" * 50)
     
     try:
-        from models.trained_ml_ensemble import TrainedMLEnsembleModel
         
         # Initialize ML ensemble
         ml_ensemble = TrainedMLEnsembleModel()

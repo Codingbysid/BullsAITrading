@@ -1,3 +1,17 @@
+from src.utils.common_imports import *
+import asyncio
+import sys
+import argparse
+import logging
+from datetime import datetime, timedelta
+from pathlib import Path
+import json
+import warnings
+    from src.data.focused_data_pipeline import FocusedDataPipeline
+    from src.models.basic_ml_models import BasicMLModels
+    from src.risk.focused_risk_management import FocusedRiskManager
+    from backtesters.focused_5_ticker_backtester import Focused5TickerBacktester
+
 #!/usr/bin/env python3
 """
 Focused QuantAI Trading Platform - Main Application.
@@ -14,21 +28,10 @@ Features:
 - Comprehensive backtesting
 """
 
-import asyncio
-import sys
-import argparse
-import logging
-from datetime import datetime, timedelta
-from pathlib import Path
-import json
-import warnings
 warnings.filterwarnings('ignore')
 
 # Import focused modules
 try:
-    from src.data.focused_data_pipeline import FocusedDataPipeline
-    from src.models.basic_ml_models import BasicMLModels
-    from src.risk.focused_risk_management import FocusedRiskManager
     FOCUSED_MODULES_AVAILABLE = True
 except ImportError:
     FOCUSED_MODULES_AVAILABLE = False
@@ -36,7 +39,6 @@ except ImportError:
 
 # Import focused backtester
 try:
-    from backtesters.focused_5_ticker_backtester import Focused5TickerBacktester
     FOCUSED_BACKTESTER_AVAILABLE = True
 except ImportError:
     FOCUSED_BACKTESTER_AVAILABLE = False
@@ -51,7 +53,7 @@ logging.basicConfig(
         logging.FileHandler('focused_quantai.log')
     ]
 )
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class FocusedQuantAIPlatform:

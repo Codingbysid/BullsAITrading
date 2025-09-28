@@ -1,3 +1,16 @@
+from src.utils.common_imports import *
+import os
+import sys
+import subprocess
+import json
+from pathlib import Path
+from typing import Dict, List, Optional
+import logging
+            from src.data.real_market_data_integration import RealMarketDataIntegration
+            from datetime import datetime, timedelta
+from src.data.real_market_data_integration import RealMarketDataIntegration
+from datetime import datetime, timedelta
+
 #!/usr/bin/env python3
 """
 Market Data Setup Script for QuantAI Trading Platform.
@@ -6,17 +19,10 @@ This script helps set up real market data integration
 with multiple data sources and API keys.
 """
 
-import os
-import sys
-import subprocess
-import json
-from pathlib import Path
-from typing import Dict, List, Optional
-import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class MarketDataSetup:
@@ -236,7 +242,6 @@ class MarketDataSetup:
         try:
             # Import the real market data integration
             sys.path.append(str(self.project_root))
-            from src.data.real_market_data_integration import RealMarketDataIntegration
             
             # Initialize with API keys
             data_integration = RealMarketDataIntegration(
@@ -248,7 +253,6 @@ class MarketDataSetup:
             
             # Test historical data
             print("📊 Testing historical data...")
-            from datetime import datetime, timedelta
             start_date = datetime.now() - timedelta(days=30)
             end_date = datetime.now()
             
@@ -292,9 +296,6 @@ class MarketDataSetup:
 Sample usage of QuantAI Real Market Data Integration.
 """
 
-from src.data.real_market_data_integration import RealMarketDataIntegration
-from datetime import datetime, timedelta
-import json
 
 def main():
     # Initialize with your API keys

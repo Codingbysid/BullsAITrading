@@ -1,3 +1,12 @@
+from src.utils.common_imports import *
+import asyncio
+from typing import Dict, Any, List, Optional
+from datetime import datetime, timedelta
+import logging
+from .base_models import BaseModel, ModelOutput
+from src.data.sentiment_analysis import SentimentAggregator, RealTimeSentimentMonitor
+    import asyncio
+
 #!/usr/bin/env python3
 """
 Sentiment Analysis Model for the four-model decision engine.
@@ -11,17 +20,9 @@ This model analyzes market sentiment from multiple sources:
 Provides 25% input weight to the RL Decider Agent.
 """
 
-import asyncio
-import numpy as np
-import pandas as pd
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
-import logging
 
-from .base_models import BaseModel, ModelOutput
-from src.data.sentiment_analysis import SentimentAggregator, RealTimeSentimentMonitor
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class SentimentAnalysisModel(BaseModel):
@@ -427,7 +428,6 @@ class SentimentAnalysisModel(BaseModel):
 
 # Example usage and testing
 if __name__ == "__main__":
-    import asyncio
     
     async def test_sentiment_model():
         """Test the sentiment analysis model"""

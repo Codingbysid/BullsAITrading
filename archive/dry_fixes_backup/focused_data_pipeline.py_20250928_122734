@@ -1,0 +1,696 @@
+"""
+Focused Data Pipeline for 5-Ticker QuantAI Platform.
+
+This module implements a specialized data pipeline for the 5 core tickers:
+- Amazon (AMZN)
+- Meta/Facebook (META) 
+- NVIDIA (NVDA)
+- Alphabet/Google (GOOGL)
+- Apple (AAPL)
+
+Features:
+- 15 years of historical data
+- Intraday data when available
+- Advanced sentiment analysis
+- Fundamental data integration
+- Microstructure features
+"""
+
+import pandas as pd
+import numpy as np
+import yfinance as yf
+import requests
+import asyncio
+import aiohttp
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple, Any
+import logging
+from dataclasses import dataclass
+import json
+import time
+
+# Advanced libraries
+try:
+    import talib
+    TALIB_AVAILABLE = True
+except ImportError:
+    TALIB_AVAILABLE = False
+    logging.warning("TA-Lib not available. Install with: pip install TA-Lib")
+
+try:
+    import pandas_ta as ta
+    PANDAS_TA_AVAILABLE = True
+except ImportError:
+    PANDAS_TA_AVAILABLE = False
+    logging.warning("pandas_ta not available. Install with: pip install pandas_ta")
+
+try:
+    from arch import arch_model
+    ARCH_AVAILABLE = True
+except ImportError:
+    ARCH_AVAILABLE = False
+    logging.warning("ARCH not available. Install with: pip install arch")
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TickerData:
+    """Data structure for ticker information."""
+    symbol: str
+    name: str
+    sector: str
+    market_cap: float
+    beta: float
+    pe_ratio: float
+    dividend_yield: float
+
+
+class FocusedDataPipeline:
+    """
+    Specialized data pipeline for 5 core tickers.
+    
+    Focuses exclusively on AMZN, META, NVDA, GOOGL, AAPL with
+    advanced data collection and feature engineering.
+    """
+    
+    def __init__(self):
+        """Initialize focused data pipeline."""
+        self.tickers = {
+            'AMZN': TickerData('AMZN', 'Amazon', 'Consumer Discretionary', 1.5e12, 1.2, 45.0, 0.0),
+            'META': TickerData('META', 'Meta', 'Communication Services', 800e9, 1.3, 25.0, 0.0),
+            'NVDA': TickerData('NVDA', 'NVIDIA', 'Technology', 1.2e12, 1.5, 65.0, 0.0),
+            'GOOGL': TickerData('GOOGL', 'Alphabet', 'Communication Services', 1.8e12, 1.1, 28.0, 0.0),
+            'AAPL': TickerData('AAPL', 'Apple', 'Technology', 3.0e12, 1.0, 30.0, 0.5)
+        }
+        
+        self.historical_data = {}
+        self.sentiment_data = {}
+        self.fundamental_data = {}
+        self.features = {}
+        
+    def fetch_historical_data(
+        self, 
+        start_date: datetime = None, 
+        end_date: datetime = None,
+        include_intraday: bool = False
+    ) -> Dict[str, pd.DataFrame]:
+        """
+        Fetch comprehensive historical data for all 5 tickers.
+        
+        Args:
+            start_date: Start date for data (default: 15 years ago)
+            end_date: End date for data (default: today)
+            include_intraday: Whether to fetch intraday data
+            
+        Returns:
+            Dictionary with historical data for each ticker
+        """
+        if start_date is None:
+            start_date = datetime.now() - timedelta(days=15*365)
+        if end_date is None:
+            end_date = datetime.now()
+            
+        logger.info(f"Fetching historical data from {start_date} to {end_date}")
+        
+        for symbol, ticker_info in self.tickers.items():
+            try:
+                logger.info(f"Fetching data for {symbol} ({ticker_info.name})")
+                
+                # Fetch daily data
+                ticker = yf.Ticker(symbol)
+                daily_data = ticker.history(
+                    start=start_date,
+                    end=end_date,
+                    interval='1d',
+                    auto_adjust=True,
+                    prepost=True
+                )
+                
+                if daily_data.empty:
+                    logger.warning(f"No daily data for {symbol}")
+                    continue
+                
+                # Add ticker information
+                daily_data['symbol'] = symbol
+                daily_data['sector'] = ticker_info.sector
+                
+                # Fetch intraday data if requested
+                if include_intraday:
+                    try:
+                        intraday_data = ticker.history(
+                            start=end_date - timedelta(days=7),  # Last 7 days
+                            end=end_date,
+                            interval='1h',
+                            auto_adjust=True
+                        )
+                        if not intraday_data.empty:
+                            daily_data['intraday_available'] = True
+                        else:
+                            daily_data['intraday_available'] = False
+                    except Exception as e:
+                        logger.warning(f"Intraday data not available for {symbol}: {e}")
+                        daily_data['intraday_available'] = False
+                else:
+                    daily_data['intraday_available'] = False
+                
+                # Add corporate actions
+                try:
+                    actions = ticker.actions
+                    if not actions.empty:
+                        # Add split and dividend information
+                        daily_data = self._add_corporate_actions(daily_data, actions)
+                except Exception as e:
+                    logger.warning(f"Corporate actions not available for {symbol}: {e}")
+                
+                self.historical_data[symbol] = daily_data
+                logger.info(f"✅ Fetched {len(daily_data)} records for {symbol}")
+                
+            except Exception as e:
+                logger.error(f"Error fetching data for {symbol}: {e}")
+                continue
+        
+        logger.info(f"✅ Historical data collection completed for {len(self.historical_data)} tickers")
+        return self.historical_data
+    
+    def _add_corporate_actions(self, data: pd.DataFrame, actions: pd.DataFrame) -> pd.DataFrame:
+        """Add corporate actions information to price data."""
+        # Add split and dividend columns
+        data['stock_splits'] = 0.0
+        data['dividends'] = 0.0
+        
+        for date, row in actions.iterrows():
+            if date in data.index:
+                if 'Stock Splits' in row and row['Stock Splits'] > 0:
+                    data.loc[date, 'stock_splits'] = row['Stock Splits']
+                if 'Dividends' in row and row['Dividends'] > 0:
+                    data.loc[date, 'dividends'] = row['Dividends']
+        
+        return data
+    
+    def fetch_sentiment_data(self, days_back: int = 30) -> Dict[str, pd.DataFrame]:
+        """
+        Fetch sentiment data for all 5 tickers.
+        
+        Args:
+            days_back: Number of days to look back for sentiment
+            
+        Returns:
+            Dictionary with sentiment data for each ticker
+        """
+        logger.info(f"Fetching sentiment data for last {days_back} days")
+        
+        for symbol, ticker_info in self.tickers.items():
+            try:
+                # Simulate sentiment data (replace with actual NewsAPI/Gemini integration)
+                sentiment_data = self._simulate_sentiment_data(symbol, days_back)
+                self.sentiment_data[symbol] = sentiment_data
+                logger.info(f"✅ Fetched sentiment data for {symbol}")
+                
+            except Exception as e:
+                logger.error(f"Error fetching sentiment for {symbol}: {e}")
+                continue
+        
+        logger.info(f"✅ Sentiment data collection completed for {len(self.sentiment_data)} tickers")
+        return self.sentiment_data
+    
+    def _simulate_sentiment_data(self, symbol: str, days_back: int) -> pd.DataFrame:
+        """Simulate sentiment data (replace with actual API calls)."""
+        dates = pd.date_range(
+            start=datetime.now() - timedelta(days=days_back),
+            end=datetime.now(),
+            freq='D'
+        )
+        
+        # Simulate realistic sentiment patterns
+        np.random.seed(hash(symbol) % 2**32)
+        
+        sentiment_data = pd.DataFrame({
+            'date': dates,
+            'symbol': symbol,
+            'sentiment_score': np.random.normal(0, 0.3, len(dates)),
+            'sentiment_confidence': np.random.uniform(0.6, 0.9, len(dates)),
+            'news_volume': np.random.poisson(5, len(dates)),
+            'headline_impact': np.random.exponential(0.5, len(dates)),
+            'social_sentiment': np.random.normal(0, 0.2, len(dates)),
+            'analyst_sentiment': np.random.normal(0, 0.4, len(dates))
+        })
+        
+        # Add some realistic patterns
+        sentiment_data['sentiment_score'] = np.clip(sentiment_data['sentiment_score'], -1, 1)
+        sentiment_data['social_sentiment'] = np.clip(sentiment_data['social_sentiment'], -1, 1)
+        sentiment_data['analyst_sentiment'] = np.clip(sentiment_data['analyst_sentiment'], -1, 1)
+        
+        return sentiment_data.set_index('date')
+    
+    def fetch_fundamental_data(self) -> Dict[str, pd.DataFrame]:
+        """
+        Fetch fundamental data for all 5 tickers.
+        
+        Returns:
+            Dictionary with fundamental data for each ticker
+        """
+        logger.info("Fetching fundamental data")
+        
+        for symbol, ticker_info in self.tickers.items():
+            try:
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                
+                fundamental_data = pd.DataFrame({
+                    'symbol': [symbol],
+                    'market_cap': [info.get('marketCap', ticker_info.market_cap)],
+                    'pe_ratio': [info.get('trailingPE', ticker_info.pe_ratio)],
+                    'forward_pe': [info.get('forwardPE', np.nan)],
+                    'peg_ratio': [info.get('pegRatio', np.nan)],
+                    'price_to_book': [info.get('priceToBook', np.nan)],
+                    'price_to_sales': [info.get('priceToSalesTrailing12Months', np.nan)],
+                    'dividend_yield': [info.get('dividendYield', ticker_info.dividend_yield)],
+                    'beta': [info.get('beta', ticker_info.beta)],
+                    'sector': [ticker_info.sector],
+                    'industry': [info.get('industry', 'Unknown')],
+                    'revenue_growth': [info.get('revenueGrowth', np.nan)],
+                    'earnings_growth': [info.get('earningsGrowth', np.nan)],
+                    'return_on_equity': [info.get('returnOnEquity', np.nan)],
+                    'debt_to_equity': [info.get('debtToEquity', np.nan)],
+                    'current_ratio': [info.get('currentRatio', np.nan)],
+                    'quick_ratio': [info.get('quickRatio', np.nan)],
+                    'gross_margin': [info.get('grossMargins', np.nan)],
+                    'operating_margin': [info.get('operatingMargins', np.nan)],
+                    'profit_margin': [info.get('profitMargins', np.nan)],
+                    'revenue': [info.get('totalRevenue', np.nan)],
+                    'net_income': [info.get('netIncomeToCommon', np.nan)],
+                    'free_cash_flow': [info.get('freeCashflow', np.nan)],
+                    'total_cash': [info.get('totalCash', np.nan)],
+                    'total_debt': [info.get('totalDebt', np.nan)],
+                    'shares_outstanding': [info.get('sharesOutstanding', np.nan)]
+                })
+                
+                self.fundamental_data[symbol] = fundamental_data
+                logger.info(f"✅ Fetched fundamental data for {symbol}")
+                
+            except Exception as e:
+                logger.error(f"Error fetching fundamentals for {symbol}: {e}")
+                continue
+        
+        logger.info(f"✅ Fundamental data collection completed for {len(self.fundamental_data)} tickers")
+        return self.fundamental_data
+    
+    def create_advanced_features(self) -> Dict[str, pd.DataFrame]:
+        """
+        Create advanced features for all tickers.
+        
+        Returns:
+            Dictionary with engineered features for each ticker
+        """
+        logger.info("Creating advanced features for all tickers")
+        
+        for symbol, data in self.historical_data.items():
+            try:
+                logger.info(f"Creating features for {symbol}")
+                
+                # Start with base data
+                features = data.copy()
+                
+                # Calculate returns
+                features['returns'] = features['Close'].pct_change()
+                features['log_returns'] = np.log(features['Close'] / features['Close'].shift(1))
+                
+                # Technical indicators using pandas_ta
+                if PANDAS_TA_AVAILABLE:
+                    features = self._add_pandas_ta_indicators(features)
+                else:
+                    features = self._add_basic_indicators(features)
+                
+                # TA-Lib indicators if available
+                if TALIB_AVAILABLE:
+                    features = self._add_talib_indicators(features)
+                
+                # Volatility features
+                features = self._add_volatility_features(features)
+                
+                # Volume features
+                features = self._add_volume_features(features)
+                
+                # Momentum features
+                features = self._add_momentum_features(features)
+                
+                # Regime features
+                features = self._add_regime_features(features)
+                
+                # Microstructure features
+                features = self._add_microstructure_features(features)
+                
+                # Sentiment features
+                if symbol in self.sentiment_data:
+                    features = self._add_sentiment_features(features, symbol)
+                
+                # Fundamental features
+                if symbol in self.fundamental_data:
+                    features = self._add_fundamental_features(features, symbol)
+                
+                # Factor exposures
+                features = self._add_factor_exposures(features, symbol)
+                
+                # Clean and validate features
+                features = self._clean_features(features)
+                
+                self.features[symbol] = features
+                logger.info(f"✅ Created {len(features.columns)} features for {symbol}")
+                
+            except Exception as e:
+                logger.error(f"Error creating features for {symbol}: {e}")
+                continue
+        
+        logger.info(f"✅ Feature engineering completed for {len(self.features)} tickers")
+        return self.features
+    
+    def _add_pandas_ta_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add technical indicators using pandas_ta."""
+        try:
+            # RSI
+            data['rsi'] = ta.rsi(data['Close'], length=14)
+            
+            # MACD
+            macd = ta.macd(data['Close'])
+            data['macd'] = macd['MACD_12_26_9']
+            data['macd_signal'] = macd['MACDs_12_26_9']
+            data['macd_histogram'] = macd['MACDh_12_26_9']
+            
+            # Bollinger Bands
+            bb = ta.bbands(data['Close'], length=20)
+            data['bb_upper'] = bb['BBU_20_2.0']
+            data['bb_middle'] = bb['BBM_20_2.0']
+            data['bb_lower'] = bb['BBL_20_2.0']
+            data['bb_width'] = (data['bb_upper'] - data['bb_lower']) / data['bb_middle']
+            data['bb_position'] = (data['Close'] - data['bb_lower']) / (data['bb_upper'] - data['bb_lower'])
+            
+            # Stochastic
+            stoch = ta.stoch(data['High'], data['Low'], data['Close'])
+            data['stoch_k'] = stoch['STOCHk_14_3_3']
+            data['stoch_d'] = stoch['STOCHd_14_3_3']
+            
+            # Williams %R
+            data['williams_r'] = ta.willr(data['High'], data['Low'], data['Close'])
+            
+            # Commodity Channel Index
+            data['cci'] = ta.cci(data['High'], data['Low'], data['Close'])
+            
+            # Average True Range
+            data['atr'] = ta.atr(data['High'], data['Low'], data['Close'])
+            
+            # On-Balance Volume
+            data['obv'] = ta.obv(data['Close'], data['Volume'])
+            
+            # Money Flow Index
+            data['mfi'] = ta.mfi(data['High'], data['Low'], data['Close'], data['Volume'])
+            
+        except Exception as e:
+            logger.warning(f"Error adding pandas_ta indicators: {e}")
+        
+        return data
+    
+    def _add_basic_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add basic technical indicators without external libraries."""
+        # Simple Moving Averages
+        for period in [5, 10, 20, 50, 100, 200]:
+            data[f'sma_{period}'] = data['Close'].rolling(period).mean()
+            data[f'ema_{period}'] = data['Close'].ewm(span=period).mean()
+        
+        # RSI calculation
+        delta = data['Close'].diff()
+        gain = delta.where(delta > 0, 0)
+        loss = -delta.where(delta < 0, 0)
+        avg_gain = gain.rolling(14).mean()
+        avg_loss = loss.rolling(14).mean()
+        rs = avg_gain / avg_loss
+        data['rsi'] = 100 - (100 / (1 + rs))
+        
+        # Bollinger Bands
+        data['bb_middle'] = data['Close'].rolling(20).mean()
+        bb_std = data['Close'].rolling(20).std()
+        data['bb_upper'] = data['bb_middle'] + (bb_std * 2)
+        data['bb_lower'] = data['bb_middle'] - (bb_std * 2)
+        data['bb_width'] = (data['bb_upper'] - data['bb_lower']) / data['bb_middle']
+        data['bb_position'] = (data['Close'] - data['bb_lower']) / (data['bb_upper'] - data['bb_lower'])
+        
+        return data
+    
+    def _add_talib_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add TA-Lib indicators."""
+        try:
+            # RSI
+            data['talib_rsi'] = talib.RSI(data['Close'].values, timeperiod=14)
+            
+            # MACD
+            macd, macd_signal, macd_hist = talib.MACD(data['Close'].values)
+            data['talib_macd'] = macd
+            data['talib_macd_signal'] = macd_signal
+            data['talib_macd_hist'] = macd_hist
+            
+            # Bollinger Bands
+            bb_upper, bb_middle, bb_lower = talib.BBANDS(data['Close'].values)
+            data['talib_bb_upper'] = bb_upper
+            data['talib_bb_middle'] = bb_middle
+            data['talib_bb_lower'] = bb_lower
+            
+            # Stochastic
+            stoch_k, stoch_d = talib.STOCH(data['High'].values, data['Low'].values, data['Close'].values)
+            data['talib_stoch_k'] = stoch_k
+            data['talib_stoch_d'] = stoch_d
+            
+            # Williams %R
+            data['talib_williams_r'] = talib.WILLR(data['High'].values, data['Low'].values, data['Close'].values)
+            
+            # Commodity Channel Index
+            data['talib_cci'] = talib.CCI(data['High'].values, data['Low'].values, data['Close'].values)
+            
+            # Average True Range
+            data['talib_atr'] = talib.ATR(data['High'].values, data['Low'].values, data['Close'].values)
+            
+        except Exception as e:
+            logger.warning(f"Error adding TA-Lib indicators: {e}")
+        
+        return data
+    
+    def _add_volatility_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add volatility-related features."""
+        # Rolling volatility
+        for period in [5, 10, 20, 30, 60]:
+            data[f'volatility_{period}'] = data['returns'].rolling(period).std() * np.sqrt(252)
+        
+        # GARCH volatility if ARCH is available
+        if ARCH_AVAILABLE:
+            try:
+                returns_clean = data['returns'].dropna() * 100
+                if len(returns_clean) > 50:
+                    model = arch_model(returns_clean, vol='GARCH', p=1, q=1)
+                    results = model.fit(disp='off')
+                    data['garch_volatility'] = results.conditional_volatility / 100
+            except Exception as e:
+                logger.warning(f"GARCH modeling failed: {e}")
+        
+        # Volatility of volatility
+        data['vol_of_vol'] = data['volatility_20'].rolling(20).std()
+        
+        # Volatility regime
+        data['high_vol_regime'] = (data['volatility_20'] > data['volatility_20'].rolling(252).quantile(0.8)).astype(int)
+        data['low_vol_regime'] = (data['volatility_20'] < data['volatility_20'].rolling(252).quantile(0.2)).astype(int)
+        
+        return data
+    
+    def _add_volume_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add volume-related features."""
+        # Volume moving averages
+        for period in [5, 10, 20, 50]:
+            data[f'volume_sma_{period}'] = data['Volume'].rolling(period).mean()
+        
+        # Volume ratio
+        data['volume_ratio'] = data['Volume'] / data['volume_sma_20']
+        
+        # Volume price trend
+        data['vpt'] = (data['Volume'] * data['returns']).cumsum()
+        
+        # On-Balance Volume
+        data['obv'] = (data['Volume'] * np.sign(data['Close'].diff())).cumsum()
+        
+        # Volume weighted average price
+        data['vwap'] = (data['Close'] * data['Volume']).rolling(20).sum() / data['Volume'].rolling(20).sum()
+        data['price_vs_vwap'] = (data['Close'] - data['vwap']) / data['vwap']
+        
+        # Volume volatility
+        data['volume_volatility'] = data['Volume'].rolling(20).std() / data['Volume'].rolling(20).mean()
+        
+        return data
+    
+    def _add_momentum_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add momentum-related features."""
+        # Price momentum
+        for period in [5, 10, 20, 50, 100]:
+            data[f'momentum_{period}'] = data['Close'] / data['Close'].shift(period) - 1
+        
+        # Rate of change
+        for period in [5, 10, 20]:
+            data[f'roc_{period}'] = data['Close'].pct_change(period)
+        
+        # Momentum oscillator
+        data['momentum_oscillator'] = data['Close'] - data['Close'].shift(10)
+        
+        # Relative strength
+        data['relative_strength'] = data['Close'] / data['Close'].rolling(252).mean()
+        
+        # Price acceleration
+        data['price_acceleration'] = data['returns'].diff()
+        
+        return data
+    
+    def _add_regime_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add regime-related features."""
+        # Trend regime
+        data['uptrend'] = (data['Close'] > data['sma_50']).astype(int)
+        data['downtrend'] = (data['Close'] < data['sma_50']).astype(int)
+        
+        # Volatility regime
+        data['high_vol'] = (data['volatility_20'] > data['volatility_20'].rolling(252).mean()).astype(int)
+        
+        # Volume regime
+        data['high_volume'] = (data['volume_ratio'] > 1.5).astype(int)
+        
+        # Market regime (bull/bear)
+        data['bull_market'] = (data['Close'] > data['Close'].rolling(252).mean()).astype(int)
+        data['bear_market'] = (data['Close'] < data['Close'].rolling(252).mean()).astype(int)
+        
+        return data
+    
+    def _add_microstructure_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Add microstructure features."""
+        # Bid-ask spread proxy (using high-low spread)
+        data['spread_proxy'] = (data['High'] - data['Low']) / data['Close']
+        
+        # Average trade size proxy
+        data['avg_trade_size'] = data['Volume'] / np.maximum(1, data['Volume'].rolling(20).count())
+        
+        # Price impact proxy
+        data['price_impact'] = abs(data['returns']) / np.log(data['Volume'] + 1)
+        
+        # Liquidity proxy
+        data['liquidity_proxy'] = data['Volume'] / data['spread_proxy']
+        
+        return data
+    
+    def _add_sentiment_features(self, data: pd.DataFrame, symbol: str) -> pd.DataFrame:
+        """Add sentiment features."""
+        sentiment_data = self.sentiment_data[symbol]
+        
+        # Merge sentiment data
+        data = data.merge(sentiment_data, left_index=True, right_index=True, how='left')
+        
+        # Fill missing sentiment data
+        sentiment_cols = ['sentiment_score', 'sentiment_confidence', 'news_volume', 
+                         'headline_impact', 'social_sentiment', 'analyst_sentiment']
+        for col in sentiment_cols:
+            if col in data.columns:
+                data[col] = data[col].fillna(method='ffill').fillna(0)
+        
+        # Sentiment momentum
+        data['sentiment_momentum'] = data['sentiment_score'].rolling(5).mean()
+        data['sentiment_volatility'] = data['sentiment_score'].rolling(20).std()
+        
+        # News impact
+        data['news_impact'] = data['sentiment_score'] * data['news_volume']
+        
+        return data
+    
+    def _add_fundamental_features(self, data: pd.DataFrame, symbol: str) -> pd.DataFrame:
+        """Add fundamental features."""
+        fundamental_data = self.fundamental_data[symbol]
+        
+        # Add fundamental ratios as constant features
+        for col in fundamental_data.columns:
+            if col not in ['symbol']:
+                data[f'fund_{col}'] = fundamental_data[col].iloc[0]
+        
+        return data
+    
+    def _add_factor_exposures(self, data: pd.DataFrame, symbol: str) -> pd.DataFrame:
+        """Add factor exposure features."""
+        # Market beta (rolling)
+        market_returns = data['returns'].rolling(252).mean()  # Proxy for market
+        data['beta'] = data['returns'].rolling(252).cov(market_returns) / market_returns.rolling(252).var()
+        
+        # Size factor (market cap proxy)
+        ticker_info = self.tickers[symbol]
+        data['size_factor'] = np.log(ticker_info.market_cap)
+        
+        # Value factor (P/E proxy)
+        data['value_factor'] = np.log(ticker_info.pe_ratio)
+        
+        # Momentum factor
+        data['momentum_factor'] = data['momentum_252']
+        
+        # Quality factor (ROE proxy)
+        data['quality_factor'] = ticker_info.pe_ratio / ticker_info.beta  # Simple quality proxy
+        
+        return data
+    
+    def _clean_features(self, data: pd.DataFrame) -> pd.DataFrame:
+        """Clean and validate features."""
+        # Remove infinite values
+        data = data.replace([np.inf, -np.inf], np.nan)
+        
+        # Remove columns with too many NaN values
+        nan_threshold = 0.5
+        cols_to_remove = data.columns[data.isnull().sum() / len(data) > nan_threshold]
+        data = data.drop(columns=cols_to_remove)
+        
+        # Fill remaining NaN values
+        numeric_cols = data.select_dtypes(include=[np.number]).columns
+        data[numeric_cols] = data[numeric_cols].fillna(method='ffill').fillna(method='bfill').fillna(0)
+        
+        return data
+    
+    def get_combined_features(self) -> pd.DataFrame:
+        """
+        Get combined features for all tickers.
+        
+        Returns:
+            Combined DataFrame with features for all tickers
+        """
+        if not self.features:
+            logger.warning("No features available. Run create_advanced_features() first.")
+            return pd.DataFrame()
+        
+        combined_data = []
+        for symbol, features in self.features.items():
+            features_copy = features.copy()
+            features_copy['ticker'] = symbol
+            combined_data.append(features_copy)
+        
+        return pd.concat(combined_data, ignore_index=False)
+    
+    def save_data(self, output_dir: str = "data"):
+        """Save all data to files."""
+        import os
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Save historical data
+        for symbol, data in self.historical_data.items():
+            data.to_csv(f"{output_dir}/{symbol}_historical.csv")
+        
+        # Save sentiment data
+        for symbol, data in self.sentiment_data.items():
+            data.to_csv(f"{output_dir}/{symbol}_sentiment.csv")
+        
+        # Save fundamental data
+        for symbol, data in self.fundamental_data.items():
+            data.to_csv(f"{output_dir}/{symbol}_fundamental.csv")
+        
+        # Save features
+        for symbol, data in self.features.items():
+            data.to_csv(f"{output_dir}/{symbol}_features.csv")
+        
+        logger.info(f"✅ Data saved to {output_dir}")
+
+
+# Global instance for easy access
+focused_pipeline = FocusedDataPipeline()

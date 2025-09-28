@@ -1,3 +1,17 @@
+from src.utils.common_imports import *
+from utils.common_imports import setup_logger
+import sys
+import argparse
+from pathlib import Path
+from datetime import datetime
+from typing import List, Dict, Any, Tuple
+import json
+import warnings
+from utils.data_processing import data_processor
+from utils.feature_engineering import feature_engineer
+from utils.performance_metrics import performance_calculator
+from utils.config_manager import config_manager
+
 #!/usr/bin/env python3
 """
 Simple ML Ensemble Model Training Script
@@ -9,26 +23,12 @@ Usage:
     python scripts/train_simple_ensemble.py --datasets datasets/ --output models/
 """
 
-import sys
-import argparse
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Any, Tuple
-import json
-import warnings
 warnings.filterwarnings('ignore')
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 # Import unified utilities
-from utils.common_imports import setup_logger
-from utils.data_processing import data_processor
-from utils.feature_engineering import feature_engineer
-from utils.performance_metrics import performance_calculator
-from utils.config_manager import config_manager
 
 logger = setup_logger(__name__)
 

@@ -1,3 +1,12 @@
+from src.utils.common_imports import *
+import sys
+import logging
+from datetime import datetime
+import argparse
+        from src.interface.cli import QuantAITerminalInterface
+        import uvicorn
+        from src.api.portfolio_api import app
+
 """
 QuantAI Portfolio Manager & Trade Suggestion Bot - Main Application
 
@@ -6,17 +15,13 @@ It provides a comprehensive portfolio management and trading recommendation
 system focused on the 5 flagship stocks: AMZN, META, NVDA, GOOGL, AAPL.
 """
 
-import sys
-import logging
-from datetime import datetime
-import argparse
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 def main():
     """Main entry point for QuantAI Portfolio Manager"""
@@ -60,7 +65,6 @@ def run_cli_mode():
     print("\n🖥️  Starting Terminal Interface...")
     
     try:
-        from src.interface.cli import QuantAITerminalInterface
         interface = QuantAITerminalInterface()
         interface.start()
     except ImportError as e:
@@ -73,8 +77,6 @@ def run_api_mode(port):
     print(f"\n🌐 Starting Web API on port {port}...")
     
     try:
-        import uvicorn
-        from src.api.portfolio_api import app
         uvicorn.run(app, host="0.0.0.0", port=port)
     except ImportError as e:
         print(f"❌ Failed to start API mode: {e}")
@@ -87,7 +89,6 @@ def run_demo_mode():
     print("This mode demonstrates the system capabilities without requiring a database.")
     
     try:
-        from src.interface.cli import QuantAITerminalInterface
         interface = QuantAITerminalInterface()
         interface._demo_mode()
         interface.start()

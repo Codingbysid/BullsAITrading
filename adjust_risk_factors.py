@@ -1,3 +1,10 @@
+from src.utils.common_imports import *
+from src.utils.config_manager import ConfigManager
+import json
+import sys
+from pathlib import Path
+from typing import Dict, Any
+
 #!/usr/bin/env python3
 """
 Adjust Risk Factors for QuantAI Trading Platform
@@ -6,17 +13,9 @@ This script allows you to modify risk factors and see how they affect
 the four-model decision engine recommendations.
 """
 
-import json
-import sys
-from pathlib import Path
-from typing import Dict, Any
 
-def load_config() -> Dict[str, Any]:
-    """Load current configuration."""
-    config_path = Path("config/local/portfolio_config.json")
-    if config_path.exists():
-        with open(config_path, 'r') as f:
-            return json.load(f)
+config_manager = ConfigManager()
+# Use: config_manager.get_config()
     return {}
 
 def save_config(config: Dict[str, Any]):

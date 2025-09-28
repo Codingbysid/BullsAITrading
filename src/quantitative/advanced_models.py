@@ -1,3 +1,20 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Optional, Tuple, Any
+import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+import warnings
+    import QuantLib as ql
+    from pypfopt import EfficientFrontier, risk_models, expected_returns
+    from pypfopt.discrete_allocation import DiscreteAllocation
+    from pypfopt.cla import CLA
+    import riskfolio as rp
+    import empyrical as ep
+    import statsmodels.api as sm
+    from statsmodels.tsa.regime_switching.markov_regression import MarkovRegression
+    from statsmodels.tsa.vector_ar.vecm import coint_johansen
+    from arch import arch_model
+
 """
 Advanced Quantitative Models for QuantAI Trading Platform.
 
@@ -9,63 +26,46 @@ This module implements cutting-edge quantitative finance models including:
 - Options pricing and Greeks
 """
 
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple, Any
-import logging
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-import warnings
 warnings.filterwarnings('ignore')
 
 # Advanced quantitative libraries
 try:
-    import QuantLib as ql
     QUANTLIB_AVAILABLE = True
 except ImportError:
     QUANTLIB_AVAILABLE = False
     logging.warning("QuantLib not available. Install with: pip install QuantLib-Python")
 
 try:
-    from pypfopt import EfficientFrontier, risk_models, expected_returns
-    from pypfopt.discrete_allocation import DiscreteAllocation
-    from pypfopt.cla import CLA
     PYPORTFOLIO_AVAILABLE = True
 except ImportError:
     PYPORTFOLIO_AVAILABLE = False
     logging.warning("PyPortfolioOpt not available. Install with: pip install PyPortfolioOpt")
 
 try:
-    import riskfolio as rp
     RISKFOLIO_AVAILABLE = True
 except ImportError:
     RISKFOLIO_AVAILABLE = False
     logging.warning("Riskfolio-Lib not available. Install with: pip install Riskfolio-Lib")
 
 try:
-    import empyrical as ep
     EMPYRICIAL_AVAILABLE = True
 except ImportError:
     EMPYRICIAL_AVAILABLE = False
     logging.warning("Empyrical not available. Install with: pip install empyrical-reloaded")
 
 try:
-    import statsmodels.api as sm
-    from statsmodels.tsa.regime_switching.markov_regression import MarkovRegression
-    from statsmodels.tsa.vector_ar.vecm import coint_johansen
     STATSMODELS_AVAILABLE = True
 except ImportError:
     STATSMODELS_AVAILABLE = False
     logging.warning("Statsmodels not available. Install with: pip install statsmodels")
 
 try:
-    from arch import arch_model
     ARCH_AVAILABLE = True
 except ImportError:
     ARCH_AVAILABLE = False
     logging.warning("ARCH not available. Install with: pip install arch")
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass

@@ -1,0 +1,442 @@
+"""
+Sentiment analysis module for news and social media data.
+
+This module provides comprehensive sentiment analysis including:
+- News sentiment analysis using multiple sources
+- Social media sentiment tracking
+- Gemini API integration for advanced NLP
+- Real-time sentiment scoring
+"""
+
+import asyncio
+import aiohttp
+import pandas as pd
+import numpy as np
+from typing import Dict, List, Optional, Tuple
+from datetime import datetime, timedelta
+import logging
+import json
+import re
+from dataclasses import dataclass
+from newsapi import NewsApiClient
+
+from ..config.settings import get_settings
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class SentimentData:
+    """Sentiment data structure."""
+    symbol: str
+    timestamp: datetime
+    sentiment_score: float
+    confidence: float
+    source: str
+    text: str
+
+
+class NewsSentimentAnalyzer:
+    """News sentiment analysis using multiple APIs."""
+    
+    def __init__(self):
+        self.settings = get_settings()
+        self.news_api_key = self.settings.news_api_key
+        self.gemini_api_key = self.settings.gemini_api_key
+        
+        # Initialize News API client
+        if self.news_api_key and self.news_api_key != "your_news_api_key_here":
+            self.news_client = NewsApiClient(api_key=self.news_api_key)
+        else:
+            self.news_client = None
+        
+    async def fetch_news_sentiment(
+        self, 
+        symbol: str, 
+        lookback_days: int = 7
+    ) -> List[SentimentData]:
+        """
+        Fetch and analyze news sentiment for a symbol.
+        
+        Args:
+            symbol: Stock symbol
+            lookback_days: Number of days to look back
+            
+        Returns:
+            List of SentimentData objects
+        """
+        # Fetch news articles
+        articles = await self._fetch_news_articles(symbol, lookback_days)
+        
+        # Analyze sentiment for each article
+        sentiment_data = []
+        for article in articles:
+            try:
+                sentiment = await self._analyze_sentiment(article['title'] + ' ' + article['description'])
+                sentiment_data.append(SentimentData(
+                    symbol=symbol,
+                    timestamp=pd.to_datetime(article['publishedAt']),
+                    sentiment_score=sentiment['sentiment_score'],
+                    confidence=sentiment['confidence'],
+                    source='news_api',
+                    text=article['title']
+                ))
+            except Exception as e:
+                logger.error(f"Error analyzing sentiment for article: {e}")
+                continue
+        
+        return sentiment_data
+    
+    async def _fetch_news_articles(
+        self, 
+        symbol: str, 
+        lookback_days: int
+    ) -> List[Dict]:
+        """Fetch news articles from News API."""
+        if not self.news_client:
+            logger.warning("News API client not initialized")
+            return []
+        
+        try:
+            # Calculate date range
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=lookback_days)
+            
+            # Use News API client to fetch articles
+            response = self.news_client.get_everything(
+                q=f'{symbol} stock',
+                from_param=start_date.strftime('%Y-%m-%d'),
+                to=end_date.strftime('%Y-%m-%d'),
+                sort_by='publishedAt',
+                language='en'
+            )
+            
+            if response['status'] == 'ok':
+                return response.get('articles', [])
+            else:
+                logger.error(f"News API error: {response.get('message', 'Unknown error')}")
+                return []
+                
+        except Exception as e:
+            logger.error(f"Error fetching news: {e}")
+            return []
+    
+    async def _analyze_sentiment(self, text: str) -> Dict[str, float]:
+        """
+        Analyze sentiment using Gemini API or fallback to simple analysis.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            Dictionary with sentiment score and confidence
+        """
+        # Try Gemini API first if available
+        if self.gemini_api_key and self.gemini_api_key != "your_gemini_api_key_here":
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={self.gemini_api_key}"
+                
+                prompt = f"""
+                Analyze the sentiment of the following financial news text and provide:
+                1. A sentiment score from -1 (very negative) to 1 (very positive)
+                2. A confidence score from 0 to 1
+                
+                Text: "{text}"
+                
+                Respond in JSON format: {{"sentiment_score": float, "confidence": float}}
+                """
+                
+                payload = {
+                    "contents": [{
+                        "parts": [{"text": prompt}]
+                    }]
+                }
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(url, json=payload) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            content = data['candidates'][0]['content']['parts'][0]['text']
+                            
+                            # Parse JSON response
+                            sentiment_data = json.loads(content)
+                            return sentiment_data
+                        else:
+                            logger.warning(f"Gemini API error: {response.status}, using fallback")
+                            return self._simple_sentiment_analysis(text)
+            except Exception as e:
+                logger.warning(f"Error with Gemini API: {e}, using fallback")
+                return self._simple_sentiment_analysis(text)
+        else:
+            # Use simple sentiment analysis as fallback
+            return self._simple_sentiment_analysis(text)
+    
+    def _simple_sentiment_analysis(self, text: str) -> Dict[str, float]:
+        """
+        Simple sentiment analysis using keyword matching.
+        
+        Args:
+            text: Text to analyze
+            
+        Returns:
+            Dictionary with sentiment score and confidence
+        """
+        # Simple keyword-based sentiment analysis
+        positive_keywords = [
+            'bullish', 'growth', 'profit', 'gain', 'rise', 'increase', 'strong', 
+            'positive', 'optimistic', 'upgrade', 'beat', 'exceed', 'outperform'
+        ]
+        negative_keywords = [
+            'bearish', 'decline', 'loss', 'fall', 'decrease', 'weak', 
+            'negative', 'pessimistic', 'downgrade', 'miss', 'underperform'
+        ]
+        
+        text_lower = text.lower()
+        
+        positive_count = sum(1 for word in positive_keywords if word in text_lower)
+        negative_count = sum(1 for word in negative_keywords if word in text_lower)
+        
+        # Calculate sentiment score
+        total_keywords = positive_count + negative_count
+        if total_keywords == 0:
+            sentiment_score = 0.0
+            confidence = 0.3
+        else:
+            sentiment_score = (positive_count - negative_count) / total_keywords
+            confidence = min(0.8, total_keywords * 0.1)
+        
+        return {
+            "sentiment_score": sentiment_score,
+            "confidence": confidence
+        }
+
+
+class SocialMediaSentimentAnalyzer:
+    """Social media sentiment analysis (placeholder for future implementation)."""
+    
+    def __init__(self):
+        self.settings = get_settings()
+    
+    async def fetch_twitter_sentiment(
+        self, 
+        symbol: str, 
+        lookback_hours: int = 24
+    ) -> List[SentimentData]:
+        """
+        Fetch Twitter sentiment for a symbol.
+        
+        Note: This is a placeholder implementation.
+        In production, you would integrate with Twitter API v2.
+        """
+        # Placeholder implementation
+        logger.info(f"Twitter sentiment analysis for {symbol} (placeholder)")
+        return []
+    
+    async def fetch_reddit_sentiment(
+        self, 
+        symbol: str, 
+        lookback_hours: int = 24
+    ) -> List[SentimentData]:
+        """
+        Fetch Reddit sentiment for a symbol.
+        
+        Note: This is a placeholder implementation.
+        In production, you would integrate with Reddit API.
+        """
+        # Placeholder implementation
+        logger.info(f"Reddit sentiment analysis for {symbol} (placeholder)")
+        return []
+
+
+class SentimentAggregator:
+    """Aggregates sentiment from multiple sources."""
+    
+    def __init__(self):
+        self.news_analyzer = NewsSentimentAnalyzer()
+        self.social_analyzer = SocialMediaSentimentAnalyzer()
+    
+    async def get_comprehensive_sentiment(
+        self, 
+        symbol: str, 
+        lookback_days: int = 7
+    ) -> Dict[str, float]:
+        """
+        Get comprehensive sentiment score from all sources.
+        
+        Args:
+            symbol: Stock symbol
+            lookback_days: Lookback period
+            
+        Returns:
+            Dictionary with aggregated sentiment metrics
+        """
+        # Fetch sentiment from all sources
+        news_sentiment = await self.news_analyzer.fetch_news_sentiment(symbol, lookback_days)
+        twitter_sentiment = await self.social_analyzer.fetch_twitter_sentiment(symbol, lookback_days * 24)
+        reddit_sentiment = await self.social_analyzer.fetch_reddit_sentiment(symbol, lookback_days * 24)
+        
+        # Combine all sentiment data
+        all_sentiment = news_sentiment + twitter_sentiment + reddit_sentiment
+        
+        if not all_sentiment:
+            return {
+                'overall_sentiment': 0.0,
+                'confidence': 0.0,
+                'news_sentiment': 0.0,
+                'social_sentiment': 0.0,
+                'sample_size': 0
+            }
+        
+        # Calculate weighted sentiment scores
+        news_scores = [s.sentiment_score for s in news_sentiment]
+        social_scores = [s.sentiment_score for s in twitter_sentiment + reddit_sentiment]
+        
+        # Weighted average (news gets higher weight)
+        news_weight = 0.7
+        social_weight = 0.3
+        
+        news_avg = np.mean(news_scores) if news_scores else 0.0
+        social_avg = np.mean(social_scores) if social_scores else 0.0
+        
+        overall_sentiment = news_weight * news_avg + social_weight * social_avg
+        
+        # Calculate confidence based on sample size and consistency
+        all_scores = [s.sentiment_score for s in all_sentiment]
+        confidence = min(1.0, len(all_scores) / 10)  # More samples = higher confidence
+        
+        return {
+            'overall_sentiment': overall_sentiment,
+            'confidence': confidence,
+            'news_sentiment': news_avg,
+            'social_sentiment': social_avg,
+            'sample_size': len(all_sentiment)
+        }
+    
+    def create_sentiment_features(
+        self, 
+        sentiment_data: List[SentimentData]
+    ) -> pd.DataFrame:
+        """
+        Create sentiment features for ML models.
+        
+        Args:
+            sentiment_data: List of sentiment data
+            
+        Returns:
+            DataFrame with sentiment features
+        """
+        if not sentiment_data:
+            return pd.DataFrame()
+        
+        # Convert to DataFrame
+        df = pd.DataFrame([
+            {
+                'timestamp': s.timestamp,
+                'sentiment_score': s.sentiment_score,
+                'confidence': s.confidence,
+                'source': s.source
+            }
+            for s in sentiment_data
+        ])
+        
+        # Set timestamp as index
+        df.set_index('timestamp', inplace=True)
+        
+        # Create time-based features
+        features = pd.DataFrame(index=df.index)
+        
+        # Rolling sentiment metrics
+        for window in [1, 3, 7]:
+            features[f'sentiment_mean_{window}d'] = df['sentiment_score'].rolling(f'{window}D').mean()
+            features[f'sentiment_std_{window}d'] = df['sentiment_score'].rolling(f'{window}D').std()
+            features[f'sentiment_max_{window}d'] = df['sentiment_score'].rolling(f'{window}D').max()
+            features[f'sentiment_min_{window}d'] = df['sentiment_score'].rolling(f'{window}D').min()
+        
+        # Sentiment momentum
+        features['sentiment_momentum_1d'] = df['sentiment_score'].diff(1)
+        features['sentiment_momentum_3d'] = df['sentiment_score'].diff(3)
+        
+        # Confidence-weighted sentiment
+        features['confidence_weighted_sentiment'] = (
+            df['sentiment_score'] * df['confidence']
+        ).rolling('7D').mean()
+        
+        # Sentiment volatility
+        features['sentiment_volatility'] = df['sentiment_score'].rolling('7D').std()
+        
+        return features
+
+
+class RealTimeSentimentMonitor:
+    """Real-time sentiment monitoring for live trading."""
+    
+    def __init__(self):
+        self.aggregator = SentimentAggregator()
+        self.sentiment_cache = {}
+    
+    async def get_live_sentiment(self, symbol: str) -> Dict[str, float]:
+        """
+        Get real-time sentiment for a symbol.
+        
+        Args:
+            symbol: Stock symbol
+            
+        Returns:
+            Current sentiment metrics
+        """
+        # Check cache first
+        cache_key = f"{symbol}_{datetime.now().strftime('%Y%m%d%H')}"
+        if cache_key in self.sentiment_cache:
+            return self.sentiment_cache[cache_key]
+        
+        # Fetch fresh sentiment
+        sentiment = await self.aggregator.get_comprehensive_sentiment(symbol, lookback_days=1)
+        
+        # Cache result
+        self.sentiment_cache[cache_key] = sentiment
+        
+        return sentiment
+    
+    def get_sentiment_signal(self, sentiment_data: Dict[str, float]) -> str:
+        """
+        Generate trading signal based on sentiment.
+        
+        Args:
+            sentiment_data: Sentiment metrics
+            
+        Returns:
+            Trading signal: 'BUY', 'SELL', or 'HOLD'
+        """
+        sentiment = sentiment_data.get('overall_sentiment', 0.0)
+        confidence = sentiment_data.get('confidence', 0.0)
+        
+        # Only trade if confidence is high enough
+        if confidence < 0.5:
+            return 'HOLD'
+        
+        # Generate signal based on sentiment
+        if sentiment > 0.3:
+            return 'BUY'
+        elif sentiment < -0.3:
+            return 'SELL'
+        else:
+            return 'HOLD'
+
+
+# Global instances
+sentiment_aggregator = SentimentAggregator()
+sentiment_monitor = RealTimeSentimentMonitor()
+
+
+async def get_sentiment_for_symbol(symbol: str, lookback_days: int = 7) -> Dict[str, float]:
+    """
+    Convenience function to get sentiment for a symbol.
+    
+    Args:
+        symbol: Stock symbol
+        lookback_days: Lookback period
+        
+    Returns:
+        Sentiment metrics
+    """
+    return await sentiment_aggregator.get_comprehensive_sentiment(symbol, lookback_days)

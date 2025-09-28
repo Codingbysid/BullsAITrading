@@ -1,3 +1,10 @@
+from src.utils.common_imports import *
+from typing import Dict, Any, Tuple, Optional
+from datetime import datetime, timedelta
+import logging
+from .base_models import BaseModel, ModelOutput
+from src.risk.risk_management import RiskManager, KellyCriterion
+
 #!/usr/bin/env python3
 """
 Quantitative Risk Model for the four-model decision engine.
@@ -11,16 +18,9 @@ This model analyzes risk-adjusted quantitative metrics:
 Provides 25% input weight to the RL Decider Agent.
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, Any, Tuple, Optional
-from datetime import datetime, timedelta
-import logging
 
-from .base_models import BaseModel, ModelOutput
-from src.risk.risk_management import RiskManager, KellyCriterion
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class QuantitativeRiskModel(BaseModel):

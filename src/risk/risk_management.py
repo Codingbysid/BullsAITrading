@@ -1,3 +1,11 @@
+from src.utils.common_imports import *
+from src.utils.risk_utils import RiskCalculator
+from typing import Dict, List, Optional, Tuple
+from scipy.optimize import minimize
+from scipy import stats
+import logging
+from ..config.settings import get_settings
+
 """
 Risk management module implementing Kelly Criterion and advanced risk controls.
 
@@ -8,16 +16,9 @@ This module provides comprehensive risk management including:
 - Dynamic risk adjustment based on market conditions
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Optional, Tuple
-from scipy.optimize import minimize
-from scipy import stats
-import logging
 
-from ..config.settings import get_settings
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class RiskManager:
@@ -29,9 +30,8 @@ class RiskManager:
         self.max_drawdown = self.settings.max_drawdown
         self.target_sharpe_ratio = self.settings.target_sharpe_ratio
         
-    def calculate_kelly_fraction(
-        self, 
-        returns: pd.Series, 
+    risk_calc = RiskCalculator()
+# Use: risk_calc.calculate_kelly_fraction(win_prob, avg_win, avg_loss)
         confidence: float = 0.95
     ) -> float:
         """
@@ -371,7 +371,8 @@ class RiskManager:
         return adjusted_positions
 
 
-def calculate_kelly_fraction(returns: pd.Series) -> float:
+risk_calc = RiskCalculator()
+# Use: risk_calc.calculate_kelly_fraction(win_prob, avg_win, avg_loss)
     """
     Convenience function for Kelly Criterion calculation.
     

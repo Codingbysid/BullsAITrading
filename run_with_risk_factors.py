@@ -1,3 +1,11 @@
+from src.utils.common_imports import *
+import sys
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, List
+        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
+        import json
+
 #!/usr/bin/env python3
 """
 Run QuantAI with Enhanced Risk Factors
@@ -6,12 +14,6 @@ This script demonstrates the four-model decision engine with comprehensive
 risk factor analysis including volatility, drawdown, VaR, and position sizing.
 """
 
-import sys
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / 'src'))
@@ -29,7 +31,6 @@ def run_with_risk_factors():
     print("=" * 70)
     
     try:
-        from apps.portfolio.local_portfolio_manager import LocalPortfolioManager
         
         # Initialize portfolio manager
         portfolio_manager = LocalPortfolioManager()
@@ -103,7 +104,6 @@ def show_risk_configuration():
     print("=" * 30)
     
     try:
-        import json
         config_path = Path("config/local/portfolio_config.json")
         if config_path.exists():
             with open(config_path, 'r') as f:

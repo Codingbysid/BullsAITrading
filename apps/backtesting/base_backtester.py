@@ -1,3 +1,11 @@
+from src.utils.common_imports import *
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any, Tuple
+import json
+from pathlib import Path
+import logging
+from abc import ABC, abstractmethod
+
 #!/usr/bin/env python3
 """
 Base Backtester for QuantAI Trading Platform.
@@ -13,18 +21,10 @@ Features:
 - Integrated with four-model decision engine
 """
 
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
-import json
-from pathlib import Path
-import logging
-from abc import ABC, abstractmethod
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class BaseBacktester(ABC):

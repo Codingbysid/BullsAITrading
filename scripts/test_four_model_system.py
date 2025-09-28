@@ -1,3 +1,23 @@
+from src.utils.common_imports import *
+import asyncio
+import sys
+import os
+import json
+import unittest
+from datetime import datetime, timedelta
+from typing import Dict, List, Any, Optional
+import time
+from src.models.sentiment_model import SentimentAnalysisModel
+from src.models.quantitative_model import QuantitativeRiskModel
+from src.models.ml_ensemble_model import MLEnsembleModel
+from src.models.rl_decider_agent import RLDeciderAgent
+from src.decision_engine.four_model_engine import FourModelDecisionEngine
+from src.training.four_model_training import FourModelTrainingPipeline
+import logging
+            from src.models.base_models import ModelOutput
+            import psutil
+            import os
+
 #!/usr/bin/env python3
 """
 Comprehensive testing framework for the four-model decision engine system.
@@ -12,31 +32,14 @@ This script provides extensive testing capabilities:
 Ensures the four-model architecture is robust and production-ready.
 """
 
-import asyncio
-import sys
-import os
-import json
-import unittest
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
-import pandas as pd
-import numpy as np
-import time
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.models.sentiment_model import SentimentAnalysisModel
-from src.models.quantitative_model import QuantitativeRiskModel
-from src.models.ml_ensemble_model import MLEnsembleModel
-from src.models.rl_decider_agent import RLDeciderAgent
-from src.decision_engine.four_model_engine import FourModelDecisionEngine
-from src.training.four_model_training import FourModelTrainingPipeline
 
 # Configure logging
-import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 class FourModelSystemTester:
@@ -281,7 +284,6 @@ class FourModelSystemTester:
             agent = RLDeciderAgent()
             
             # Create mock model outputs
-            from src.models.base_models import ModelOutput
             
             sentiment_output = ModelOutput(
                 signal=0.3, confidence=0.8, reasoning="Test sentiment", metrics={}
@@ -576,8 +578,6 @@ class FourModelSystemTester:
     async def _test_memory_usage(self) -> Dict[str, Any]:
         """Test memory usage"""
         try:
-            import psutil
-            import os
             
             # Get initial memory usage
             process = psutil.Process(os.getpid())

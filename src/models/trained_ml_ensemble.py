@@ -1,3 +1,14 @@
+from src.utils.common_imports import *
+from src.utils.common_imports import setup_logger
+from typing import Dict, Any, List, Optional, Tuple
+from datetime import datetime
+import logging
+import json
+from pathlib import Path
+import warnings
+from .base_models import BaseModel, ModelOutput
+from src.utils.feature_engineering import feature_engineer
+
 #!/usr/bin/env python3
 """
 Trained ML Ensemble Model Integration
@@ -8,19 +19,8 @@ into the four-model decision engine.
 Uses the trained models from models/ directory.
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
-import logging
-import json
-from pathlib import Path
-import warnings
 warnings.filterwarnings('ignore')
 
-from .base_models import BaseModel, ModelOutput
-from src.utils.common_imports import setup_logger
-from src.utils.feature_engineering import feature_engineer
 
 logger = setup_logger(__name__)
 

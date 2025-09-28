@@ -1,3 +1,12 @@
+from src.utils.common_imports import *
+from typing import Dict, List, Tuple
+from src.utils.risk_utils import RiskCalculator
+from datetime import datetime
+import logging
+    from ..data.data_sources import DataManager
+    from ..trading.decision_engine import DecisionEngine
+    from ..risk.risk_management import RiskManager
+
 """
 Portfolio Manager for QuantAI Trading Bot.
 
@@ -5,17 +14,9 @@ This module manages user portfolios, generates AI recommendations,
 and handles trade execution with risk management.
 """
 
-from typing import Dict, List, Tuple
-import numpy as np
-import pandas as pd
-from datetime import datetime
-import logging
 
 # Import existing modules
 try:
-    from ..data.data_sources import DataManager
-    from ..trading.decision_engine import DecisionEngine
-    from ..risk.risk_management import RiskManager
     MODULES_AVAILABLE = True
 except ImportError:
     MODULES_AVAILABLE = False
@@ -29,7 +30,7 @@ class PortfolioManager:
         self.data_manager = data_manager or self._create_fallback_data_manager()
         self.decision_engine = self._create_decision_engine()
         self.risk_manager = self._create_risk_manager()
-        self.logger = logging.getLogger(__name__)
+        self.logger = setup_logger()
         self.symbols = ['AMZN', 'META', 'NVDA', 'GOOGL', 'AAPL']
     
     def _create_fallback_data_manager(self):
@@ -80,9 +81,8 @@ class PortfolioManager:
             def calculate_position_risk(self, symbol, portfolio, target_price):
                 return np.random.uniform(0.1, 0.8)
             
-            def calculate_kelly_fraction(self, win_prob, avg_win, avg_loss):
-                if avg_loss == 0:
-                    return 0.1
+            risk_calc = RiskCalculator()
+# Use: risk_calc.calculate_kelly_fraction(win_prob, avg_win, avg_loss)
                 return max(0, (win_prob * avg_win - (1 - win_prob) * avg_loss) / avg_win)
         
         return FallbackRiskManager()

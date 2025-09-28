@@ -1,88 +1,5 @@
 #!/usr/bin/env python3
 """
-Fix Import Issues for Real AI Recommendations
-
-This script fixes the import path issues that are preventing the real AI
-recommendations from working in the local environment.
-"""
-
-import sys
-import os
-from pathlib import Path
-
-def fix_import_paths():
-    """Fix import paths in the decision engine and models."""
-    print("🔧 Fixing Import Paths for Real AI Recommendations")
-    print("=" * 60)
-    
-    # Files to fix
-    files_to_fix = [
-        "src/decision_engine/four_model_engine.py",
-        "src/models/trained_ml_ensemble.py",
-        "src/models/sentiment_model.py",
-        "src/models/quantitative_model.py",
-        "src/models/ml_ensemble_model.py",
-        "src/models/rl_decider_agent.py"
-    ]
-    
-    for file_path in files_to_fix:
-        if Path(file_path).exists():
-            print(f"📝 Fixing imports in {file_path}")
-            fix_file_imports(file_path)
-        else:
-            print(f"⚠️  File not found: {file_path}")
-
-def fix_file_imports(file_path):
-    """Fix imports in a specific file."""
-    try:
-        with open(file_path, 'r') as f:
-            content = f.read()
-        
-        # Fix relative imports
-        old_imports = [
-            "from ..models.",
-            "from ..utils.",
-            "from ..data.",
-            "from ..risk.",
-            "from ..decision_engine.",
-            "from ..training.",
-            "from ..interface.",
-            "from ..security.",
-            "from ..database."
-        ]
-        
-        new_imports = [
-            "from src.models.",
-            "from src.utils.",
-            "from src.data.",
-            "from src.risk.",
-            "from src.decision_engine.",
-            "from src.training.",
-            "from src.interface.",
-            "from src.security.",
-            "from src.database."
-        ]
-        
-        for old, new in zip(old_imports, new_imports):
-            content = content.replace(old, new)
-        
-        # Write back the fixed content
-        with open(file_path, 'w') as f:
-            f.write(content)
-        
-        print(f"✅ Fixed imports in {file_path}")
-        
-    except Exception as e:
-        print(f"❌ Error fixing {file_path}: {e}")
-
-def create_working_decision_engine():
-    """Create a working decision engine with fixed imports."""
-    print("\n🚀 Creating Working Decision Engine")
-    print("=" * 40)
-    
-    # Create a simplified working decision engine
-    working_engine_code = '''#!/usr/bin/env python3
-"""
 Working Decision Engine for Local Environment
 
 This is a simplified version of the four-model decision engine
@@ -143,7 +60,10 @@ class WorkingDecisionEngine:
         
         try:
             # Load the trained ML ensemble
-            from src.models.trained_ml_ensemble import TrainedMLEnsembleModel
+            import sys
+            from pathlib import Path
+            sys.path.append(str(Path(__file__).parent.parent))
+            from models.trained_ml_ensemble import TrainedMLEnsembleModel
             ml_ensemble = TrainedMLEnsembleModel()
             
             # Get ML ensemble prediction
@@ -312,33 +232,6 @@ def main():
                 
         except Exception as e:
             print(f"{symbol}: Error - {e}")
-
-if __name__ == "__main__":
-    main()
-'''
-    
-    # Write the working decision engine
-    with open("src/decision_engine/working_decision_engine.py", 'w') as f:
-        f.write(working_engine_code)
-    
-    print("✅ Created working decision engine")
-
-def main():
-    """Main function."""
-    print("🚀 Fixing Import Issues for Real AI Recommendations")
-    print("=" * 70)
-    
-    # Fix import paths
-    fix_import_paths()
-    
-    # Create working decision engine
-    create_working_decision_engine()
-    
-    print("\n🎉 Import fixes completed!")
-    print("\n📋 Next steps:")
-    print("1. Test the working decision engine: python src/decision_engine/working_decision_engine.py")
-    print("2. Update the portfolio manager to use the working engine")
-    print("3. Run the portfolio manager to get real AI recommendations")
 
 if __name__ == "__main__":
     main()

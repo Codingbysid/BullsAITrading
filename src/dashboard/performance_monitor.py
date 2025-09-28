@@ -1,3 +1,14 @@
+from src.utils.common_imports import *
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
+import logging
+import json
+from pathlib import Path
+from ..trading.decision_engine import decision_engine
+from ..risk.risk_management import RiskManager
+from ..config.settings import get_settings
+
 """
 Performance monitoring dashboard for the QuantAI Trading Platform.
 
@@ -8,20 +19,9 @@ This module provides real-time monitoring of:
 - System health
 """
 
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
-import logging
-import json
-from pathlib import Path
 
-from ..trading.decision_engine import decision_engine
-from ..risk.risk_management import RiskManager
-from ..config.settings import get_settings
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass

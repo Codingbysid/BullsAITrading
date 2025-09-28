@@ -1,3 +1,19 @@
+from src.utils.common_imports import *
+from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
+import uvicorn
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any
+import logging
+from .performance_monitor import performance_monitor, get_dashboard_data
+from ..trading.decision_engine import decision_engine
+from ..config.settings import get_settings
+        import os
+            import asyncio
+
 """
 Web dashboard API for the QuantAI Trading Platform.
 
@@ -8,21 +24,9 @@ This module provides a FastAPI-based web dashboard for monitoring:
 - System health and status
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.requests import Request
-import uvicorn
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-import logging
 
-from .performance_monitor import performance_monitor, get_dashboard_data
-from ..trading.decision_engine import decision_engine
-from ..config.settings import get_settings
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -119,7 +123,6 @@ async def export_performance_data(background_tasks: BackgroundTasks):
         filepath = f"exports/{filename}"
         
         # Create exports directory if it doesn't exist
-        import os
         os.makedirs("exports", exist_ok=True)
         
         background_tasks.add_task(performance_monitor.export_performance_data, filepath)
@@ -218,7 +221,6 @@ async def websocket_dashboard(websocket):
             await websocket.send_json(data)
             
             # Wait before next update
-            import asyncio
             await asyncio.sleep(5)  # Update every 5 seconds
             
     except Exception as e:

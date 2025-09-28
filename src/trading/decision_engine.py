@@ -1,3 +1,13 @@
+from src.utils.common_imports import *
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple, Any
+from dataclasses import dataclass
+import logging
+from ..data.sentiment_analysis import SentimentAggregator, RealTimeSentimentMonitor
+from ..risk.risk_management import RiskManager, KellyCriterion
+from ..models.trading_models import EnsembleModel
+from ..config.settings import get_settings
+
 """
 Advanced decision engine with risk-adjusted metrics integration.
 
@@ -9,19 +19,9 @@ This module implements the core decision-making logic that integrates:
 - Portfolio state
 """
 
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple, Any
-from dataclasses import dataclass
-import logging
 
-from ..data.sentiment_analysis import SentimentAggregator, RealTimeSentimentMonitor
-from ..risk.risk_management import RiskManager, KellyCriterion
-from ..models.trading_models import EnsembleModel
-from ..config.settings import get_settings
 
-logger = logging.getLogger(__name__)
+logger = setup_logger()
 
 
 @dataclass

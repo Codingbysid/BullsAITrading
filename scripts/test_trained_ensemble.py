@@ -1,3 +1,14 @@
+from src.utils.common_imports import *
+from src.utils.common_imports import setup_logger
+import sys
+import argparse
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, List
+import json
+from src.models.trained_ml_ensemble import TrainedMLEnsembleModel
+from src.utils.data_processing import data_processor
+
 #!/usr/bin/env python3
 """
 Test Trained ML Ensemble Model
@@ -9,22 +20,11 @@ Usage:
     python scripts/test_trained_ensemble.py
 """
 
-import sys
-import argparse
-import pandas as pd
-import numpy as np
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List
-import json
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent))
 
 # Import trained ML ensemble model
-from src.models.trained_ml_ensemble import TrainedMLEnsembleModel
-from src.utils.common_imports import setup_logger
-from src.utils.data_processing import data_processor
 
 logger = setup_logger(__name__)
 

@@ -1,3 +1,17 @@
+from src.utils.common_imports import *
+    from utils.common_imports import setup_logger
+import sys
+import json
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+import logging
+    from decision_engine.four_model_engine import FourModelDecisionEngine
+    from models.trained_ml_ensemble import TrainedMLEnsembleModel
+    from utils.data_processing import data_processor
+    from utils.performance_metrics import performance_calculator
+    from utils.risk_utils import risk_calculator
+
 #!/usr/bin/env python3
 """
 Local Portfolio Manager with Real Four-Model Decision Engine
@@ -6,32 +20,18 @@ This portfolio manager integrates the trained ML ensemble models and four-model
 decision engine for real AI recommendations in the local environment.
 """
 
-import sys
-import json
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, Any, List, Optional
-import logging
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent.parent / 'src'))
 
 # Import the four-model decision engine
 try:
-    from decision_engine.four_model_engine import FourModelDecisionEngine
-    from models.trained_ml_ensemble import TrainedMLEnsembleModel
-    from utils.common_imports import setup_logger
-    from utils.data_processing import data_processor
-    from utils.performance_metrics import performance_calculator
-    from utils.risk_utils import risk_calculator
     DECISION_ENGINE_AVAILABLE = True
     logger = setup_logger(__name__)
 except ImportError as e:
     print(f"⚠️  Decision engine not available: {e}")
     DECISION_ENGINE_AVAILABLE = False
-    logger = logging.getLogger(__name__)
+    logger = setup_logger()
 
 
 class LocalPortfolioManager:

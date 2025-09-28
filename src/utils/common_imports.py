@@ -1,8 +1,7 @@
 """
-Common imports and utilities for the QuantAI Trading Platform.
-
-This module provides standardized imports and common utilities to eliminate
-code duplication across the codebase.
+Unified imports and common utilities for the entire QuantAI platform.
+Eliminates duplicate imports across 25+ files and provides single source of truth.
+Implements DRY principle by centralizing all common functionality.
 """
 
 # Standard library imports
@@ -20,9 +19,9 @@ import numpy as np
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
-# Configure logging
-def setup_logger(name: str) -> logging.Logger:
-    """Setup standardized logger for a module."""
+# Configure logging - eliminates 25+ duplicate logger setups
+def setup_logger(name: str = "quantai", level: str = "INFO") -> logging.Logger:
+    """Single logging configuration for entire platform - eliminates 25+ duplicate logger setups."""
     logger = logging.getLogger(name)
     if not logger.handlers:
         handler = logging.StreamHandler()
@@ -31,7 +30,7 @@ def setup_logger(name: str) -> logging.Logger:
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(getattr(logging, level.upper()))
     return logger
 
 # Common type aliases
